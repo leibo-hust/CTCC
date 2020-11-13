@@ -38,7 +38,7 @@ For compilation, we use **clang/clang++** to compile the source code to LLVM IR(
 
     clang/clang++ source.c/cpp -emit-llvm -S -fno-discard-value-names -o source.ll
 
-#### Compile
+#### Decompile
 For decompilation, we use [McSema](https://github.com/lifting-bits/mcsema) to lift the binary to LLVM IR (.ll). First, you shoud install the McSema, then use the follow command to lift the binary to IR.
 
     mcsema-dyninst-disass --os linux --arch amd64 --output source.cfg --binary source --entrypoint main --std_defs Docs/linux.txt
