@@ -30,6 +30,8 @@ Just run the makefile to make.
 
     make
 ## Usage
+We've provided a sample file called **mvm.ll** in the ___IR___ directory. You can compile and run the code directly and see the result of the example: a **mvm_add.ll** file will appear in the ___IR___ directory, which is the newly created file. For your own LLVM IR files, you need to follow these steps.
+
 ### Step 1: Get the IR file.
 First you need to get the corresponding LLVM IR file.
 
