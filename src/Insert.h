@@ -16,7 +16,7 @@ void write_pattern(string input_filename, PatternList patternlist)
 	string line;    //每次读取的一行
 	int line_count = 0;  //第几行
 
-	ofstream fout(filename + "_add.ll", ios::out);			//the new modified IR file
+	ofstream fout("../IR/" + filename + "_add.ll", ios::out);			//the new modified IR file
 	regex fun_begin("; Function Attrs:");			//insert the function definition in the begining
 	int insert_fun_count = 0;
 	smatch s;
