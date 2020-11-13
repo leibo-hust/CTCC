@@ -8,7 +8,7 @@ using namespace std;
 int main() {
 	
 	string filename = "mvm";
-	filename = "../IR/" + filename;
+	filename = "./IR/" + filename;
 	readFile(filename + ".ll");
 	write_pattern(filename, patternlist);
 
