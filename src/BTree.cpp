@@ -71,6 +71,8 @@ void BTree::create(Node * &node, Block block, BlockList list)
 	}
 		
 	node->block = block;
+	node->left = nullptr;
+	node->right = nullptr;
 	int e = list.find(block.getTitle());
 	list.erase(e);		//erase the used block to void build the graph
 
