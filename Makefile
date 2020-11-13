@@ -5,10 +5,10 @@ target = main
 CC = g++ 
 
 $(target): $(obj)  
-    $(CC) $(obj) -o $(target)  
+	$(CC) $(obj) -o $(target)  
 
 %.o: %.c  
-    $(CC) -c $< -o $@  
+	$(CC) -c $< -o $@  
 
 .PHONY: clean  
 clean:  
