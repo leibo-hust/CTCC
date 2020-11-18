@@ -19,7 +19,7 @@ So far, we have supported many different loop structures, data types and depende
 | Loop form sum |    slt (i < 10 / n)   |  sle (i <= 9 / n)  |  sgt (i > -1)  |  sge (i >= 0) |
 | Dependence  |   mul = b * c; <br> e = mul + d; (direct)  | mul = b * c; <br> f = mul <br> e = f + d; (indirect) | 
 | Date Type  |  int | float | double | short |
-| Generic form | c=A * b | C=A * B | cblas_xxxx($\alpha$=1， $\beta$=0...) | c = a logic b |
+| Generic form | c=A * b | C=A * B | cblas_xxxx($\alpha=1， $\beta=0...) | c = a logic b |
 
 ## Install
 ### Step 1: Clone the repository
