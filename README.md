@@ -24,7 +24,8 @@ So far, we have supported many different loop structures, data types and depende
 ## Install
 ### Step 1: Clone the repository
     git clone https://github.com/RCCT 
-    cd RCCT  
+    cd RCCT 
+    cp librcct.so /usr/lib (export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH)
 ### Step 2: Build
 Just run the makefile to make.
 
@@ -71,5 +72,5 @@ At the end of the run, you'll get a new file - ***your filename _add.ll*** (for 
 ### Step 6: Recompile the target code.
 Use the follow command to recompile the target code into an executable program that can run under the **CIM** architecture.
 
-    clang -rdynamic -o source_new.out source_add.ll /usr/local/lib/libmcsema_rt64-9.0.a -Wno-unknown-warning-option -Wno-override-module -Wall -Werror -lm -m64 -lopenblas librcct.so
+    clang -rdynamic -o source_new.out source_add.ll /usr/local/lib/libmcsema_rt64-9.0.a -Wno-unknown-warning-option -Wno-override-module -Wall -Werror -lm -m64 -lopenblas -lrcct
 
