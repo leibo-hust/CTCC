@@ -25,7 +25,7 @@ So far, we have supported many different loop structures, data types and depende
 ### Step 1: Clone the repository
     git clone https://github.com/RCCT 
     cd RCCT 
-    cp librcct.so /usr/lib (export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH)
+    cp librcct.so /usr/lib/librcct.so (export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH)
 ### Step 2: Build
 Just run the makefile to make.
 
