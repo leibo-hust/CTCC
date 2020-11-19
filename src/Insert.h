@@ -13,8 +13,8 @@ void write_pattern(string input_filename, PatternList patternlist)
 	string filename;
 	filename = input_filename;
 	ifstream infile(filename+".ll");		// the original file
-	string line;    //Ã¿´Î¶ÁÈ¡µÄÒ»ÐÐ
-	int line_count = 0;  //µÚ¼¸ÐÐ
+	string line;    //Ã¿ï¿½Î¶ï¿½È¡ï¿½ï¿½Ò»ï¿½ï¿½
+	int line_count = 0;  //ï¿½Ú¼ï¿½ï¿½ï¿½
 
 	ofstream fout(filename + "_add.ll", ios::out);			//the new modified IR file
 	regex fun_begin("; Function Attrs:");			//insert the function definition in the begining
@@ -23,13 +23,14 @@ void write_pattern(string input_filename, PatternList patternlist)
 	vector<Pattern> pList = patternlist.getPatterns();
 
 	bool flag;				//use to judge whether to insert the original line;
-	while (getline(infile, line)) {//Ã¿´Î¶ÁÈ¡Ò»ÐÐ 
+	while (getline(infile, line)) {//Ã¿ï¿½Î¶ï¿½È¡Ò»ï¿½ï¿½ 
 		//cout << "line is" << line;
-		if (regex_search(line, s, fun_begin)) { //²åÈëgemm¶¨ÒåÉ¶
+		if (regex_search(line, s, fun_begin)) { //ï¿½ï¿½ï¿½ï¿½gemmï¿½ï¿½ï¿½ï¿½É¶
 			if (insert_fun_count == 0) {
 				fout << "declare dso_local void @cblas_sgemm(i32, i32, i32, i32, i32, i32, float, float*, i32, float*, i32, float, float*, i32)\n";
 				fout << "declare dso_local void @cblas_dgemm(i32, i32, i32, i32, i32, i32, double, double*, i32, double*, i32, double, double*, i32)\n";
 				fout << "declare dso_local void @cblas_sgemv(i32, i32, i32, i32, float, float*, i32, float*, i32, float, float*, i32)\n";
+				fout << "declare dso_local void @CIM_Bitmap(i32, i32*, i32*, i32*, i32)\n";
 				fout << "\n";
 				insert_fun_count++;
 				//line_count--;
