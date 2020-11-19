@@ -25,11 +25,15 @@ So far, we have supported many different loop structures, data types and depende
 ### Step 1: Clone the repository
     git clone https://github.com/RCCT 
     cd RCCT 
-    cp librcct.so /usr/lib/librcct.so (export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH)
+    
 ### Step 2: Build
 Just run the makefile to make.
 
-    make
+### Step 3: Setup the Environment
+Just run the makefile to make.
+
+    cp librcct.so /usr/lib/librcct.so (export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH)
+    
 ## Usage
 We've provided a sample file called **mvm.ll** in the ___IR___ directory. You can compile and run the code directly and see the result of the example: a **mvm_add.ll** file will appear in the ___IR___ directory, which is the newly created file. For your own LLVM IR files, you need to follow these steps.
 
