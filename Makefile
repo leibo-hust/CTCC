@@ -7,7 +7,7 @@ CXX = g++
 $(target): $(obj)
 	$(CXX) $(obj) -o $(target) 	
 
-%.o: %.c  
+%.o: %.c %.h 
 	$(CXX) -c $< -o $@  
 
 .PHONY: clean  

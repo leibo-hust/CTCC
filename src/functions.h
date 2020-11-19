@@ -12,7 +12,7 @@
 #include <vector>
 #include <algorithm>
 
-extern bool isDecompile = false;
+bool isDecompile = false;
 
 using namespace std;
 PatternList patternlist;
