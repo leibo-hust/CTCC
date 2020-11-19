@@ -43,6 +43,7 @@ public:
 	//for decompile
 	void deSetContent(VarList op1, VarList op2, VarList goal, int num);
 	void deSetRangeIns(vector<string> loopvar, vector<string> looprange, BlockList looplist);
+	void deBitmapSetRangeIns(string range, string op_code);
 	void deSetRange(int order, string row, string col);
 
 	void insertContent(string addIns);

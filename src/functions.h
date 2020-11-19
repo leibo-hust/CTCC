@@ -282,16 +282,20 @@ void judgePattern(BlockList looplist)
 
 		//cout << "line is:_" << line << endl;
 		if (regex_search(line, s, logic_op)) {		//if it's the bitmap
-			//最后插入指令判断是不是0或者1
+			//Finally, insert the command to determine if it is 0 or 1.
 			cout << "matching logic:_" << line << endl;
 			goal = findOperands(line)[0];
 			op1 = findOperands(line)[1];
 			op2 = findOperands(line)[2];
-			cout << "logic op are:_" << goal << "_"  << op1 << "_" << op2 << "_" << endl;
+			int e1 = line.find("=");
+			int b1 = line.find(" ", e1 + 2);
+			string op_code = line.substr(e1 + 2, b1 - e1 - 2);
+			cout << "logic op are:_" << goal << "_"  << op1 << "_" << op2 << "_" << op_code << "_" << endl;
 			VarList op1list, op2list, goallist;
 			op1list.buildList(looplist, op1);
 			op2list.buildList(looplist, op2);
 			goallist.buildList(looplist, goal);
+			goallist.setRow(op_code);
 
 			Pattern p = Pattern("bitmap");
 			//PatternList patternlist;
@@ -366,7 +370,7 @@ void judgePattern(BlockList looplist)
 }
 
 
-//Decompilation —— judge whether the block tree is the pattern and the type of the pattern
+//Decompilation ------ judge whether the block tree is the pattern and the type of the pattern
 void decompileJudgePattern(BlockList looplist)
 {
 	cout << "calling the decompileJudgePattern func" << endl;
@@ -410,6 +414,11 @@ void decompileJudgePattern(BlockList looplist)
 			op2 = findOperands(line)[2];
 			cout << "de logic op are:_" << goal << "_" << op1 << "_" << op2 << "_" << endl;
 
+			int e1 = line.find("=");
+			int b1 = line.find(" ", e1 + 2);
+			string op_code = line.substr(e1 + 2, b1 - e1 - 2);
+			cout << "de the opcode is:_" << op_code << "_" << endl;
+
 			VarList op1list, op2list, goallist;
 			/*op1list.deBuilidVarList(innerbody, op1);
 			op2list.deBuilidVarList(innerbody, op2);
@@ -449,7 +458,8 @@ void decompileJudgePattern(BlockList looplist)
 			string add_ins = DealDeLoopRange(looprange, num);				//deal the looprange
 			p.deSetContent(op1list, op2list, goallist, num);
 			p.insertContent(add_ins);
-			p.deSetRangeIns(loopvar, looprange, looplist);
+			//p.deSetRangeIns(loopvar, looprange, looplist);
+			p.deBitmapSetRangeIns(looprange.back(), op_code);
 			p.setLibFunc();
 			p.setbrlabels(looplist);			//maybe can merge with the deSetRangeIns
 			patternlist.add(p);
@@ -934,7 +944,7 @@ vector<string> findLoopVarAndRange(Block block)
 
 		}
 
-		else {			//add +,sge or sgt			(!!!!其实else只需直接：一行搞定，不用区分sge和sgt：res.push_back(var);
+		else {			//add +,sge or sgt			(!!!!锟斤拷实else只锟斤拷直锟接ｏ拷一锟叫搞定锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷sge锟斤拷sgt锟斤拷res.push_back(var);
 			bool sgt = false;
 			for (int j = l + 1; j < len; j++) {
 				line = bcontent[j];
@@ -1119,7 +1129,7 @@ vector<string> oldfindLoopVarAndRange(Block block)
 		
 		}
 
-		else {			//add +,sge or sgt			(!!!!其实else只需直接：一行搞定，不用区分sge和sgt：res.push_back(var);
+		else {			//add +,sge or sgt			(!!!!锟斤拷实else只锟斤拷直锟接ｏ拷一锟叫搞定锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷sge锟斤拷sgt锟斤拷res.push_back(var);
 			bool sgt = false;
 			for (int j = l + 1; j < len; j++) {
 				line = bcontent[j];

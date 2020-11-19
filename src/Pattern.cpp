@@ -245,7 +245,7 @@ void Pattern::setLibFunc()
 	if (type == "bitmap") {
 		// two vector : call 
 		// goal fucntion: call void @CIM_bitmap(i32 len, int* %vec1, int* %vec2, int* %goal);
-		funcIns = "  call void @CIM_bitmap(i32 " + op_1[2] + ", i32* " + op_1[0] + ", i32* " + op_2[0] + ", i32* " + dest[0] + ")\n";
+		funcIns = "  call void @CIM_bitmap(" + dest[1] + ", i32 " + op_1[2] + ", i32* " + op_1[0] + ", i32* " + op_2[0] + ", i32* " + dest[0] + ")\n";
 	}
 	else if (type == "mvm") {
 		// call void @cblas_sgemv(i32 101, i32 111, i32 111(Trans), i32 500, i32 1, i32 500, float %beta0, float* %weight0, i32 500, float* %in0, i32 1, float 0.000000e+00, float* %out0, i32 1)
@@ -375,9 +375,21 @@ void Pattern::deSetRangeIns(vector<string> loopvar, vector<string> looprange, Bl
 		string range = looprange.back();
 		op_1.push_back("1");
 		op_2.push_back("1");
+		dest.push_back("1");
 		op_1.push_back(range);
 		op_2.push_back(range);
+		dest.push_back(range);
 	}
+}
+
+void Pattern::deBitmapSetRangeIns(string range, string op_code)
+{
+	op_1.push_back("1");
+	op_2.push_back("1");
+	dest.push_back(op_code);
+	op_1.push_back(range);
+	op_2.push_back(range);
+	dest.push_back(range);
 }
 
 void Pattern::deSetRange(int order, string row, string col)
