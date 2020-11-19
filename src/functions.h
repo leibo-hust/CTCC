@@ -12,7 +12,7 @@
 #include <vector>
 #include <algorithm>
 
-bool isDecompile = false;
+bool isDecompile = true;
 
 using namespace std;
 PatternList patternlist;
@@ -431,6 +431,7 @@ void decompileJudgePattern(BlockList looplist)
 			// %136 = add i64 %127, -144
 			vector <string> Inss_1 = op1list.getInitIns();
 			vector <string> Inss_2 = op2list.getInitIns();
+			vector <string> Inss_3 = op2list.getInitIns();
 			string lastIns = Inss_1[1];
 			int e = lastIns.rfind(",");
 			int b = lastIns.rfind("%", e);
@@ -450,8 +451,10 @@ void decompileJudgePattern(BlockList looplist)
 			Inss_1[1].replace(b, op_var.length(), goaladdr);
 			cout << "after replace:_" << Inss_1[1] << "_" << endl;
 			Inss_2[1].replace(b, op_var.length(), goaladdr);
+			Inss_3[1].replace(b, op_var.length(), goaladdr);
 			op1list.setInitIns(Inss_1);
 			op2list.setInitIns(Inss_2);
+			goallist.setInitIns(Inss_3);
 			// construct the pattern
 			Pattern p = Pattern("bitmap");
 			int num = patternlist.size();
