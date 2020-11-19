@@ -48,8 +48,6 @@ For decompilation, we use [McSema](https://github.com/lifting-bits/mcsema) to li
     mcsema-lift-9.0 --os linux --arch amd64 --cfg source.cfg --output source.bc --abi_libraries Docs/abi.bc --explicit_args --explicit_args_count 8
     llvm-dis source.bc -o source.ll
 
-#### Decompile
-
 ### Step 2: Add your source file.
 Add the source files (compiled or decompiled LLVM IR (.ll)) you need to convert to the **RCCT** directory.
 
@@ -60,6 +58,8 @@ Change the ___filename___ variable in ___mian.cpp___ to your own filename. For e
 
 ### Step 4: Specifies the isDecompile variable.
 Specifies whether the IR is compiled or decompiled. In **function.h**, there is an **isDecompile variable**. If IR is compiled, then set it to ___false___; if it is decompiled, then set it to ___false___.
+
+     bool isDecompile = false;
 
 ### Step 5: Re-make.
 Recompile the code and run.
