@@ -36,6 +36,9 @@ Just run the makefile to make.
 Copy **librcct.so** to **/usr/lib** or set the **LD_LIBRARY_PATH** variable.
 
     cp librcct.so /usr/lib/librcct.so
+    
+Or
+
     export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH)
 
 
