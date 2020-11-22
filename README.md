@@ -84,5 +84,5 @@ At the end of the run, you'll get a new file - ***your filename _add.ll*** (for 
 ### Step 6: Recompile the target code.
 Use the follow command to recompile the target code into an executable program that can run under the **CIM** architecture.
 
-    clang -rdynamic -o source_new.out source_add.ll /usr/local/lib/libmcsema_rt64-9.0.a -Wno-unknown-warning-option -Wno-override-module -Wall -Werror -lm -m64 -lopenblas -lrcct
+    clang -rdynamic -o source_new.out source_add.ll /usr/local/lib/libmcsema_rt64-9.0.a -Wno-unknown-warning-option -Wno-override-module -Wall -Werror -lm -m64  -lrcct -lopenblas
 
