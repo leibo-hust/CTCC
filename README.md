@@ -39,7 +39,7 @@ Copy **librcct.so** to **/usr/lib** or set the **LD_LIBRARY_PATH** variable.
     
 Or
 
-    export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH)
+    export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
 
 
 ## Usage
