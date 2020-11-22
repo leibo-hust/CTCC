@@ -23,7 +23,7 @@ So far, we have supported many different loop structures, data types and depende
 
 ## Install
 ### Step 1: Clone the repository
-    git clone https://github.com/RCCT 
+    git clone https://github.com/leibo-hust/RCCT.git
     cd RCCT 
     
 ### Step 2: Build
