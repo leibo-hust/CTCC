@@ -1,5 +1,5 @@
 # RCCT
-A compiler tool that converts LLVM IR into CIM-executable code.
+A compilation tool that converts LLVM IR into CIM-executable code.
 
 ## Introduction
 RCCT is a tool for converting LLVM IR to computing in memory (**CIM**) recognizable and accelerable target code. Its goal is to use ReRAM and accelerate applications without modifying the source code and without source code. Four accelerable patterns are currently supported: matrix-vector multiplication (MVM), matrix-matrix multiplication (MMM), cblas library functions, and bitmap logic operations.  
