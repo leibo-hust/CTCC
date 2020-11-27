@@ -23,8 +23,8 @@ So far, we have supported many different loop structures, data types and depende
 
 ## Install
 ### Step 1: Clone the repository
-    git clone https://github.com/leibo-hust/RCCT.git
-    cd RCCT 
+    git clone --depth 1 --single-branch --branch main https://github.com/leibo-hust/RCCT.git
+    cd RCCT
     
 ### Step 2: Build
 Just run the makefile to make.
@@ -69,7 +69,7 @@ Change the ___filename___ variable in ___mian.cpp___ to your own filename. For e
     string filename = "test";
 
 ### Step 4: Specifies the isDecompile variable.
-Specifies whether the IR is compiled or decompiled. In **function.h**, there is an **isDecompile variable**. If IR is compiled, then set it to ___false___; if it is decompiled, then set it to ___false___.
+Specifies whether the IR is compiled or decompiled. In **function.h**, there is an **isDecompile variable**. If IR is compiled, then set it to ___false___; if it is decompiled, then set it to ___true___.
 
      bool isDecompile = false;
 
