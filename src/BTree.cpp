@@ -28,34 +28,6 @@ void BTree::Init(Node * p)
 	//root = p;
 }
 
-/*void BTree::create(Node * &p, Node * &temp)
-{
-	//保证二叉树满足 左子树小于根节点，右子树大于根节点
-	//p是新的节点，temp是从root开始遍历的节点
-	if (temp == nullptr)
-	{
-		temp = p;
-	}
-	else
-	{
-		//if the block has occured or is empty string
-		if (temp->title == p->title  || temp->title.empty())
-		{
-			cout << "the same value is not allowed" << endl;
-		}
-		else if (p->title == temp->getNextTrue()) //新节点比根节点小，就去左边递归
-		{
-			create(p, temp->left);
-		}
-		else if (p->title == temp->getNextFalse()) //p->data > root->data //反之去右边递归
-		{
-			create(p, temp->right);
-		}
-
-	}
-
-}*/
-
 void BTree::create(Node * &node, Block block, BlockList list)
 {
 	//callcount++;
@@ -65,9 +37,9 @@ void BTree::create(Node * &node, Block block, BlockList list)
 		node = new Node;
 	}
 	else {
-		cout << "ooooooooooooot title:_" << node->block.getTitle() << endl;
+		//cout << "ooooooooooooot title:_" << node->block.getTitle() << endl;
 		root = node;
-		cout << "rooooooooooooot title:_" << root->block.getTitle() << endl;
+		//cout << "rooooooooooooot title:_" << root->block.getTitle() << endl;
 	}
 		
 	node->block = block;
@@ -167,7 +139,7 @@ void BTree::findLoops(Node *Tree)
 			}
 			cout << "````````````````````````````````" << endl;
 			for (int i = 0; i < looplist.getListSize(); i++) {
-				cout << "title: " << looplist.FuncBlockList[i].getTitle() << endl;
+				cout << "block title: " << looplist.FuncBlockList[i].getTitle() << endl;
 				//cout << "2222222222222222222222222222222222222222222222222222222" << endl;
 			}
 			findLoops(Tree->left);			//Recursive left
@@ -189,7 +161,7 @@ Node* BTree::getRoot()
 	tree->left = left;
 }
 
-//插入一个右节点
+//锟斤拷锟斤拷一锟斤拷锟揭节碉拷
 void BTree::InsertRightChild(Node *tree, Node *right) {
 	tree->right = right;
 }*/

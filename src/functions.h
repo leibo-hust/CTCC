@@ -12,7 +12,7 @@
 #include <vector>
 #include <algorithm>
 
-bool isDecompile = true;
+bool isDecompile = false;
 
 using namespace std;
 PatternList patternlist;
@@ -40,7 +40,7 @@ void readFile(string filename) {
 
 	ifstream ifs(filename);		//open file
 	if (ifs) {	//if open success
-		cout << "open success." << endl;
+		cout << "open the file successfully." << endl;
 
 		string oneline;			//read one line everytime, it is the line that read evey time 
 		int line_count = 0;		//line number of the line
@@ -128,7 +128,7 @@ void readFile(string filename) {
 					if(b.getType() == "loop_body")
 						b.showBlock();
 				}*/
-				cout << "================================ function begin ======================================" << endl;
+				cout << "================================ The beginning of a function ======================================" << endl;
 				
 				
 				BTree btree = BTree();
@@ -155,7 +155,7 @@ void readFile(string filename) {
 				//test(n->left);
 				btree.create(n, b, blocklist);
 				//cout << "tree block title:_" << n->block->getTitle() << endl;
-				std::cout << "-----______________________------------------ binary tree:" << std::endl;
+				std::cout << "Building the binary tree................" << std::endl;
 				//btree.printTree(n);
 				//------------btree.findLoops(n);
 				findLoopsInTree(btree.getRoot());
@@ -181,12 +181,14 @@ void readFile(string filename) {
 
 			line_count++;  //increase the line number
 		}// end of the while(read file)
+
+		cout << endl;
+		cout << "------The identification process is complete!-------" << endl;
 	}
 
 	else {
 		cout << "Your file is not avaliable." << endl;
 	}
-
 
 }
 
@@ -212,13 +214,13 @@ void findLoopsInTree(Node *root)
 
 				if (cond->right == nullptr) break;		// for decompile
 			}
-			cout << "calling the function findLoopsInTree" << endl;
-			cout << "````````````````````````````````" << endl;
+			cout << "Finding loops in the function......" << endl;
+			//cout << "````````````````````````````````" << endl;
 			for (int i = 0; i < looplist.getListSize(); i++) {
-				cout << "title: " << looplist.FuncBlockList[i].getTitle() << endl;
+				cout << "  ->: " << looplist.FuncBlockList[i].getTitle() << endl;
 				//cout << "2222222222222222222222222222222222222222222222222222222" << endl;
 			}
-			cout << "------------------------------find loop end--------------------" << endl;
+			//cout << "------------------------------find loop end--------------------" << endl;
 			//analysisLoops(looplist);
 			if (isDecompile) {
 				decompileJudgePattern(looplist);
@@ -283,14 +285,15 @@ void judgePattern(BlockList looplist)
 		//cout << "line is:_" << line << endl;
 		if (regex_search(line, s, logic_op)) {		//if it's the bitmap
 			//Finally, insert the command to determine if it is 0 or 1.
-			cout << "matching logic:_" << line << endl;
+			//cout << "matching logic:_" << line << endl;
+			cout << "Find the bitmap_logic pattern." << endl;
 			goal = findOperands(line)[0];
 			op1 = findOperands(line)[1];
 			op2 = findOperands(line)[2];
 			int e1 = line.find("=");
 			int b1 = line.find(" ", e1 + 2);
 			string op_code = line.substr(e1 + 2, b1 - e1 - 2);
-			cout << "logic op are:_" << goal << "_"  << op1 << "_" << op2 << "_" << op_code << "_" << endl;
+			//cout << "logic op are:_" << goal << "_"  << op1 << "_" << op2 << "_" << op_code << "_" << endl;
 			VarList op1list, op2list, goallist;
 			op1list.buildList(looplist, op1);
 			op2list.buildList(looplist, op2);
@@ -309,7 +312,7 @@ void judgePattern(BlockList looplist)
 
 		}
 		else if (regex_search(line, s, mul)) {
-			cout << "matching mul" << endl;
+			//cout << "matching mul" << endl;
 			//cout << "iiiiiiiiiiii is:_" << i << endl;
 			//find the operands
 			goal = findOperands(line)[0];
@@ -324,17 +327,17 @@ void judgePattern(BlockList looplist)
 			for (int j = i; j < bodycontent.size(); j++) {
 				line = bodycontent[j];
 				if (regex_search(line, s, add)) {
-					cout << "matching add" << endl;
+					//cout << "matching add" << endl;
 					string addop1 = findOperands(line)[1];
 					string addop2 = findOperands(line)[2];
-					cout << "add op are:_" << addop1 << "_" << addop2 << "_" << endl;
+					//cout << "add op are:_" << addop1 << "_" << addop2 << "_" << endl;
 					if (mulist.findVar(addop1) || mulist.findVar(addop2)) {
 						mul1list.buildList(looplist, op1);
 						mul2list.buildList(looplist, op2);
 						VarList resultList;
 						resultList.buildList(looplist, addop1);
 						if (varcount == 2) {
-							cout << " find mvm" << endl;
+							cout << "Find the MVM pattern." << endl;
 							//cout << "-----------the init instruction of the goal:_" << resultList.getInitIns()[0] << endl;
 							//cout << "-----------the init instruction of the two op of mul:_" << mul1list.getinitIns() << endl;
 							Pattern p = Pattern("mvm");
@@ -349,7 +352,7 @@ void judgePattern(BlockList looplist)
 							//cout << "_and_" << mul2list.getinitIns() << "_" << endl;
 						}
 						else if (varcount == 3) {
-							cout << "find mmm" << endl;
+							cout << "Find the MMM pattern." << endl;
 							Pattern p = Pattern("mmm");
 							//PatternList patternlist;
 							//cout << "looprange:_" << loopvar[0] << "_" << looprange[0] << endl;
@@ -373,7 +376,7 @@ void judgePattern(BlockList looplist)
 //Decompilation ------ judge whether the block tree is the pattern and the type of the pattern
 void decompileJudgePattern(BlockList looplist)
 {
-	cout << "calling the decompileJudgePattern func" << endl;
+	cout << "Judging if there is a pattern......" << endl;
 	int len = looplist.getListSize();
 	vector<string> loopinitvar, loopvar, looprange;// , loopblocks;
 	for (int i = 0; i < len; i += 2) {
@@ -382,7 +385,7 @@ void decompileJudgePattern(BlockList looplist)
 		looprange.push_back(tmp[1]);
 		//loopblocks.push_back(tmp[2]);
 		loopinitvar.push_back(tmp[2]);
-		cout << "var is:_" << tmp[0] << "_ ;range is:_" << tmp[1] << "|_" << "_ ;init var is:_" << tmp[2] <<endl;
+		//cout << "var is:_" << tmp[0] << "_ ;range is:_" << tmp[1] << "|_" << "_ ;init var is:_" << tmp[2] <<endl;
 	}
 
 	Block innerbody = looplist.findById(len - 1);
@@ -407,17 +410,18 @@ void decompileJudgePattern(BlockList looplist)
 		}
 
 		if (regex_search(line, s, logic_op)) {		//if it's the bitmap
-			cout << "de matching logic:_" << line << endl;
+			//cout << "de matching logic:_" << line << endl;
+			cout << "Find the bitmap_logic pattern." << endl;
 			data_type = datatype(line);			//the data type of the logic op
 			goal = findOperands(line)[0];
 			op1 = findOperands(line)[1];
 			op2 = findOperands(line)[2];
-			cout << "de logic op are:_" << goal << "_" << op1 << "_" << op2 << "_" << endl;
+			//cout << "de logic op are:_" << goal << "_" << op1 << "_" << op2 << "_" << endl;
 
 			int e1 = line.find("=");
 			int b1 = line.find(" ", e1 + 2);
 			string op_code = line.substr(e1 + 2, b1 - e1 - 2);
-			cout << "de the opcode is:_" << op_code << "_" << endl;
+			//cout << "de the opcode is:_" << op_code << "_" << endl;
 
 			VarList op1list, op2list, goallist;
 			/*op1list.deBuilidVarList(innerbody, op1);
@@ -437,19 +441,19 @@ void decompileJudgePattern(BlockList looplist)
 			int b = lastIns.rfind("%", e);
 			string op_var = lastIns.substr(b, e - b);
 			string goaladdr;
-			cout << "de ooooop var is:_" << op_var << "_" << endl;
+			//cout << "de ooooop var is:_" << op_var << "_" << endl;
 			regex varad(op_var + " = ");
 			for (int j = i - 1; j >= 0; j--) {
 				string newins = bodycontent[j];
 				if (regex_search(newins, s, varad)) {
 					int q = newins.rfind("%");
 					goaladdr = newins.substr(q);
-					cout << "found goalvar is:_" << goaladdr << "_" << endl;
+					//cout << "found goalvar is:_" << goaladdr << "_" << endl;
 					break;
 				}
 			}
 			Inss_1[1].replace(b, op_var.length(), goaladdr);
-			cout << "after replace:_" << Inss_1[1] << "_" << endl;
+			//cout << "after replace:_" << Inss_1[1] << "_" << endl;
 			Inss_2[1].replace(b, op_var.length(), goaladdr);
 			Inss_3[1].replace(b, op_var.length(), goaladdr);
 			op1list.setInitIns(Inss_1);
@@ -469,11 +473,11 @@ void decompileJudgePattern(BlockList looplist)
 
 		}
 		else if (regex_search(line, s, mul)) {
-			cout << "de matching mul..." << endl;
+			//cout << "de matching mul..." << endl;
 			//cout << "iiiiiiiiiiii is:_" << i << endl;
 			//find the operands
 			int addcount = addIns.size();
-			cout << "the count of the add ins is:_" << addcount << "_" << endl;
+			//cout << "the count of the add ins is:_" << addcount << "_" << endl;
 
 			for (int j = i + 1; j < bodycontent.size(); j++) {		//continue to find the add/fadd
 				newline = bodycontent[j];
@@ -484,11 +488,12 @@ void decompileJudgePattern(BlockList looplist)
 				}
 
 				if (regex_search(newline, s, add)) {			//when macthing the add ins
-					cout << "de matching add..." <<  newline << endl;
+					//cout << "de matching add..." <<  newline << endl;
 					data_type = datatype(newline);
-					cout << "the type of the mxm is:_" << data_type << "_" << endl;
+					//cout << "the type of the mxm is:_" << data_type << "_" << endl;
 					if (addcount == 3) {	//maybe the mvm
-						cout << "maybe theeeeeeeeeeeeeeeee mvm: " << addIns.size() << endl;
+						//cout << "maybe theeeeeeeeeeeeeeeee mvm: " << addIns.size() << endl;
+						cout << "Find the MVM pattern." << endl;
 						/*VarList add_1, op1_1, op2_1, add_2, op1_2, op2_2, add_3, op1_3, op2_3;
 						string add_goal, add_op1, add_op2;
 						//cout << "mul op are:_" << add_goal << "_" << add_op1 << "|_" << add_op2 << "|_" << endl;
@@ -545,9 +550,9 @@ void decompileJudgePattern(BlockList looplist)
 						int num = patternlist.size();
 						string add_ins = DealDeLoopRange(looprange, num);				//deal the looprange
 						//cout << "adddddddddddddddddddddddddddddd ins: " << addins << endl;
-						for (int t = 0; t < looprange.size(); t++) {
+						/*1 for (int t = 0; t < looprange.size(); t++) {    // judge if the range is right
 							cout << looprange[t] << endl;
-						}
+						}*/
 						string vec_addr, vec_col, res_addr, res_col;			// the addr and row of the vec and result
 						vector<string> mat;					// the parameters of the matrix
 
@@ -570,8 +575,8 @@ void decompileJudgePattern(BlockList looplist)
 							vec_addr = findOperands(addIns[0])[1];
 							op_1.deBuilidVarList(bodycontent, findOperands(addIns[0])[2]);
 							vec_col = findDeRange(op_1.getVar(op_1.Size() - 1), loopvar, loopinitvar, looprange);
-							cout << "in the decompile mvm, the address and range of the vec is:_" << vec_addr << "_" << vec_col << "_" << endl;
-							cout << "mat addr is:_" << mat[0] << "_" << mat[1] << "_" << mat[2] << "_" << endl;
+							//cout << "in the decompile mvm, the address and range of the vec is:_" << vec_addr << "_" << vec_col << "_" << endl;
+							//cout << "mat addr is:_" << mat[0] << "_" << mat[1] << "_" << mat[2] << "_" << endl;
 							//string vec_row = findDeRange(findOperands(addIns[0])[1], loopvar, loopinitvar, looprange);
 							//string vec_row = findDeRange(findOperands(addIns[0])[2], loopvar, loopinitvar, looprange);
 						}
@@ -580,18 +585,18 @@ void decompileJudgePattern(BlockList looplist)
 						temp_3.deBuilidVarList(bodycontent, findOperands(addIns[3])[2]);
 						if (op_3.Size() == 1) {
 							res_addr = op_3.getVar(0);
-							cout << "res addr is: " << res_addr << endl;
+							//cout << "res addr is: " << res_addr << endl;
 							res_col = findDeRange(temp_3.getVar(temp_3.Size() - 1), loopvar, loopinitvar, looprange);
-							cout << "res_col is: " << res_col << endl;
+							//cout << "res_col is: " << res_col << endl;
 						}
 						else{
-							cout << "res addr is: " << temp_3.getVar(0) << endl;
+							//cout << "res addr is: " << temp_3.getVar(0) << endl;
 							res_col = findDeRange(op_3.getVar(op_3.Size() - 1), loopvar, loopinitvar, looprange);
 						}
 
 						vector<string> initins;
 						initins.push_back("  %op1 = inttoptr i64 " + vec_addr +" to " + data_type + "*");
-						cout << "the build initins is:_" << initins[0] << "_" << endl;
+						//cout << "the build initins is:_" << initins[0] << "_" << endl;
 						op_1.setInitIns(initins);
 
 						initins[0] = "  %op1 = inttoptr i64 " + mat[0] + " to " + data_type + "*";
@@ -619,7 +624,8 @@ void decompileJudgePattern(BlockList looplist)
 					else if (addcount == 4) {	//maybe the mmm	
 						// %166 = add i64 %165, %67
 						// %169 = add i64 %166, %168          : %67 is the address of the mat; %165 and %168 is the loop var(like i, j)
-						cout << "maybe the mmmmmm" << endl;
+						//cout << "maybe the mmmmmm" << endl;
+						cout << "Find the MMM pattern." << endl;
 						/*VarList dest_1, var_1, address_1;		// represent the first ins: %166
 						VarList dest_2, var_2, add_temp;			// represent the second ins: %169
 						string add_1, op_1, or_1;
@@ -656,19 +662,19 @@ void decompileJudgePattern(BlockList looplist)
 						VarList op_1, op_2, op_3;
 						vector<string> initins;
 						vector<string> matres = findDeMat(addIns[0], addIns[1], loopvar, loopinitvar, looprange, bodycontent);
-						cout << "mat 1 : " << matres[0] << "_ "<< matres[1] << "_ " << matres[2] << endl;
+						//cout << "mat 1 : " << matres[0] << "_ "<< matres[1] << "_ " << matres[2] << endl;
 						initins.push_back("  %op1 = inttoptr i64 " + matres[0] + " to " + data_type + "*");
 						op_1.setInitIns(initins);
 						
 
 
 						vector<string> matres1 = findDeMat(addIns[2], addIns[3], loopvar, loopinitvar, looprange, bodycontent);
-						cout << "mat 2 : " << matres1[0] << "_ " << matres1[1] << "_ " << matres1[2] << endl;
+						//cout << "mat 2 : " << matres1[0] << "_ " << matres1[1] << "_ " << matres1[2] << endl;
 						initins[0] = "  %op2 = inttoptr i64 " + matres1[0] + " to " + data_type + "*";
 						op_2.setInitIns(initins);
 						
 						vector<string> matres2 = findDeMat(addIns[4], addIns[5], loopvar, loopinitvar, looprange, bodycontent);
-						cout << "mat 3 : " << matres2[0] << "_ " << matres2[1] << "_ " << matres2[2] << endl;
+						//cout << "mat 3 : " << matres2[0] << "_ " << matres2[1] << "_ " << matres2[2] << endl;
 						initins[0] = "  %op3 = inttoptr i64 " + matres2[0] + " to " + data_type + "*";
 						op_3.setInitIns(initins);
 						//p.setRangeIns(loopvar, looprange, num);
@@ -796,19 +802,19 @@ vector<string> findLoopVarAndRange(Block block)
 				if (b = line.find("slt") != string::npos) {		// if is the slt, then the range = last var: slt i32 %5, 100(%4)
 					e = line.find(",", b);
 					range = line.substr(e + 2);
-					std::cout << "slt range is:_" << range << "_" << endl;
+					//std::cout << "slt range is:_" << range << "_" << endl;
 				}
 				else {										// others, the range = last var + 1: slt i32 %5, 99(%4) [99 + 1,(%4 + 1)]
 					if (b = line.find("sle") != string::npos) {		// if is the slt, then the range = last var: slt i32 %5, 100(%4)
 						e = line.find(",", b);
 						range = line.substr(e + 2);
-						cout << "sle range is:_" << range << "_" << endl;
+						//cout << "sle range is:_" << range << "_" << endl;
 					}
 					else if (line.find("sg") != string::npos) {
 						e = line.rfind(",");
 						b = line.rfind("%", e);
 						range = line.substr(b, e - b);
-						cout << "sg range is:_" << range << "_" << endl;
+						//cout << "sg range is:_" << range << "_" << endl;
 					}
 					// if is the number
 					if (range[0] != '%') {
@@ -821,7 +827,7 @@ vector<string> findLoopVarAndRange(Block block)
 						range = range + "+";
 					}
 				}
-				cout << "var is:_" << var << "_ ;range is:_" << range << "_" << endl;
+				//cout << "loop variable:_" << var << "_ ; loop range:_" << range << "_" << endl;
 			}
 		}
 	}
@@ -854,7 +860,7 @@ vector<string> findLoopVarAndRange(Block block)
 				int e = line.find("=", b);
 				range = new_line.substr(b, e - b - 1);
 				//1 cout << "is var : load line is:_" << new_line << "_" << endl;
-				cout << "is_var : var is: _" << range << "_" << endl;
+				//cout << "is_var : var is: _" << range << "_" << endl;
 				is_var = true;
 				break;
 			}
@@ -865,14 +871,14 @@ vector<string> findLoopVarAndRange(Block block)
 		int e = line.find("=", b);
 		var = line.substr(b, e - b - 1);
 		//1 cout << "load line is:_" << line << "_" << endl;
-		cout << "de var is: _" << var << "_" << endl;
+		//cout << "de var is: _" << var << "_" << endl;
 
 		line = bcontent[l - 1];
 		b = line.rfind("%");
 		e = line.find(" ", b);
 		initvar = line.substr(b, e - b);
 		//1 cout << "inttoptr line is:_" << line << "_" << endl;
-		cout << "de origin var is: _" << initvar << "_" << endl;
+		//cout << "de origin var is: _" << initvar << "_" << endl;
 		//o res.push_back(line.substr(b, e - b - 1));
 
 		for (int i = l; i < len; i++) {
@@ -888,7 +894,7 @@ vector<string> findLoopVarAndRange(Block block)
 			line = bcontent[l];
 			b = line.find("-");
 			string num = line.substr(b + 1);
-			cout << "de num is:_" << num << "_" << endl;
+			//cout << "de num is:_" << num << "_" << endl;
 
 			for (int j = l + 1; j < len; j++) {
 				line = bcontent[j];
@@ -905,12 +911,12 @@ vector<string> findLoopVarAndRange(Block block)
 								if (regex_search(line, s, icmp_0)) {	//sle
 									if (is_var) {			// the range should be the var + 1;
 										range = range + "+1";
-										cout << "sssssssssssssssssssssssssssle range : de sle range is:" << range << endl;
+										//cout << "sssssssssssssssssssssssssssle range : de sle range is:" << range << endl;
 									}
 									else {
 										int value = stoi(num);
 										value += 1;
-										cout << "de value is:_" << value << endl;
+										//cout << "de value is:_" << value << endl;
 										range = to_string(value);
 									}
 									//o res.push_back(range);
@@ -931,10 +937,10 @@ vector<string> findLoopVarAndRange(Block block)
 							//new
 							if (is_var) {			// the range should be the var + 1;
 								range = range;
-								cout << "iiiiiiiiiiiiiiiiiiiiiiiiiiiis var : de slt range is:" << range << endl;
+								//cout << "iiiiiiiiiiiiiiiiiiiiiiiiiiiis var : de slt range is:" << range << endl;
 							}
 							else {
-								cout << "de slt range is:" << num << endl;
+								//cout << "de slt range is:" << num << endl;
 								range = num;
 							}
 							break;
@@ -947,7 +953,7 @@ vector<string> findLoopVarAndRange(Block block)
 
 		}
 
-		else {			//add +,sge or sgt			(!!!!��ʵelseֻ��ֱ�ӣ�һ�и㶨����������sge��sgt��res.push_back(var);
+		else {			//add +,sge or sgt			(In fact, 'else' only need one line: res.push_back(var); there is no need to distinguish sge and sgt. 
 			bool sgt = false;
 			for (int j = l + 1; j < len; j++) {
 				line = bcontent[j];
@@ -974,7 +980,7 @@ vector<string> findLoopVarAndRange(Block block)
 		}
 	}	//end of decompile
 
-
+	cout << "loop variable:_" << var << "_ ; loop range:_" << range << "_" << endl;
 	res.push_back(var);
 	res.push_back(range);
 	//res.push_back(block.getTitle());
@@ -1218,11 +1224,11 @@ vector<string> oldfindLoopVarAndRange(Block block)
 
 string findDeRange(string var, vector<string> loopvar, vector<string> loopinitvar, vector<string> looprange)
 {
-	cout << "var findRANGE is:_" << var << "_" << endl;
+	//cout << "var findRANGE is:_" << var << "_" << endl;
 	for (int j = 0; j < loopvar.size(); j++) {
 		//cout << "findDErange, loopvar and loopinitvar:_" << loopvar[j] << " " << loopinitvar[j] << "_" << endl;
 		if (var == loopvar[j] || var == loopinitvar[j]) {
-			cout << "FIND!" << endl;
+			//cout << "FIND!" << endl;
 			return looprange[j];
 			break;
 		}

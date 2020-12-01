@@ -25,8 +25,8 @@ void VarList::buildList(BlockList blocklist, string var)
 	//%145 = load i32, i32* %144
 	//sotre
 	varlist.push_back(var);
-	cout << "calling the varlist build" << endl;
-	cout << "var is:_" << var << "_" << endl;
+	cout << "Building the varlist......." << endl;
+	cout << "  var is:_" << var << "_" << endl;
 	int len = blocklist.getListSize();
 	for (int i = len - 1; i >= 0; i--) {
 		vector<string> content = blocklist.findById(i).getContent();
@@ -54,7 +54,7 @@ void VarList::buildList(BlockList blocklist, string var)
 			
 			smatch s;
 			if (regex_search(ins, s, load)) {
-				cout << "matching load...." << ins << endl;
+				//cout << "matching load...." << ins << endl;
 				int b = ins.find("load");
 				int e = ins.find("%", b);
 				int t = ins.find(",", e);
@@ -64,7 +64,7 @@ void VarList::buildList(BlockList blocklist, string var)
 				var = temp;
 			}
 			else if (regex_search(ins, s, store)) {
-				cout << "mmmmmatching store.... " <<  ins << endl;
+				//cout << "mmmmmatching store.... " <<  ins << endl;
 				int b = ins.find("store");
 				int e = ins.find("%", b);
 				int t = ins.find(",", e);
@@ -74,13 +74,13 @@ void VarList::buildList(BlockList blocklist, string var)
 				var = temp;
 			}
 			else if (regex_search(ins, s, store2)) {
-				cout << "mmmmmatching store2.... " << var << endl;
+				//cout << "mmmmmatching store2.... " << var << endl;
 				int b = ins.find(",");
 				int e = ins.find("%", b);
 				int t = ins.find(",", e);
 				//int n = ins.size();
 				string temp = ins.substr(e, t - e);
-				cout << "yttttttemp is:_" << temp << "_" << endl;
+				//cout << "yttttttemp is:_" << temp << "_" << endl;
 				var = temp;
 			}
 			else if (regex_search(ins, s, getelment)) {		//set the init ins
@@ -110,7 +110,7 @@ void VarList::buildList(BlockList blocklist, string var)
 							count++;
 						}
 					}
-					cout << "col and row Is:_" << row << "_" << col << "_" << endl;
+					//cout << "col and row Is:_" << row << "_" << col << "_" << endl;
 				}
 				else if (regex_search(content[j - 2], s, vload)) {
 					//cout << "t:_" << content[j - 2] << endl;
@@ -118,12 +118,12 @@ void VarList::buildList(BlockList blocklist, string var)
 					row = "1";
 					int b = content[j - 2].find("*"), e = content[j - 2].find(",", b);
 					col = content[j - 2].substr(b + 2, e - b - 2);
-					cout << "col is:_" << col << "_" << endl;
+					//cout << "col is:_" << col << "_" << endl;
 
 				}
 				//cout << "current ins is:_" << ins << endl;
 				//cout << "before twor is:_" << content[j - 2] << endl;
-				cout << "judge type is:_" << type << endl;
+				//cout << "judge type is:_" << type << endl;
 				
 				//cout << "the array is:_" << array << endl;
 				//var = array;

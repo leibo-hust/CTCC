@@ -9,12 +9,13 @@ using namespace std;
 //use to modify the source IR file.(insert the Pattern Block)
 void write_pattern(string input_filename, PatternList patternlist)
 {
-	cout << "calling insert" << endl;
+	cout << endl;
+	cout << "Inserting the pattern block......" << endl;
 	string filename;
 	filename = input_filename;
 	ifstream infile(filename+".ll");		// the original file
-	string line;    //ÿ�ζ�ȡ��һ��
-	int line_count = 0;  //�ڼ���
+	string line;    //the line read
+	int line_count = 0;  //line number
 
 	ofstream fout(filename + "_add.ll", ios::out);			//the new modified IR file
 	regex fun_begin("; Function Attrs:");			//insert the function definition in the begining
@@ -23,9 +24,9 @@ void write_pattern(string input_filename, PatternList patternlist)
 	vector<Pattern> pList = patternlist.getPatterns();
 
 	bool flag;				//use to judge whether to insert the original line;
-	while (getline(infile, line)) {//ÿ�ζ�ȡһ�� 
+	while (getline(infile, line)) {//read one line everytime 
 		//cout << "line is" << line;
-		if (regex_search(line, s, fun_begin)) { //����gemm����ɶ
+		if (regex_search(line, s, fun_begin)) { //insert the definition of the function
 			if (insert_fun_count == 0) {
 				fout << "declare dso_local void @cblas_sgemm(i32, i32, i32, i32, i32, i32, float, float*, i32, float*, i32, float, float*, i32)\n";
 				fout << "declare dso_local void @cblas_dgemm(i32, i32, i32, i32, i32, i32, double, double*, i32, double*, i32, double, double*, i32)\n";

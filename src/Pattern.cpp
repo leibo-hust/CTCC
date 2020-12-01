@@ -35,19 +35,19 @@ void Pattern::setContent(VarList op1, VarList op2, VarList goal, int num)
 		string vecIns = setInitIns(op1.getInitIns(), "vec1", num);
 		op_1.push_back("%vec1_" + to_string(num));
 		setOpRange(op_1, op1);
-		cout << "op_1: " << op_1[0] << "_" << op_1[1] << "_" << op_1[2] << "_" << endl;
+		//cout << "  op_1: " << op_1[0] << "_ " << op_1[1] << "_" << op_1[2] << "_" << endl;
 		//op_1.push_back(vecIns);
 		//setRangeIns(op1);
 
 		string matIns = setInitIns(op2.getInitIns(), "vec2", num);
 		op_2.push_back("%vec2_" + to_string(num));
 		setOpRange(op_2, op2);
-		cout << "op_2: " << op_2[0] << "_" << op_2[1] << "_" << op_2[2] << "_" << endl;
+		cout << "  op_2: " << op_2[0] << "_ " << op_2[1] << "_" << op_2[2] << "_" << endl;
 
 		string goalIns = setInitIns(goal.getInitIns(), "out", num);
 		dest.push_back("%out_" + to_string(num));
 		setOpRange(dest, goal);
-		cout << "goal: " << dest[0] << "_" << dest[1] << "_" << dest[2] << "_" << endl;
+		//cout << "  goal: " << dest[0] << "_ " << dest[1] << "_" << dest[2] << "_" << endl;
 
 
 		InitIns += vecIns + matIns + goalIns;
@@ -59,19 +59,19 @@ void Pattern::setContent(VarList op1, VarList op2, VarList goal, int num)
 		string vecIns = setInitIns(op1.getInitIns(), "vec", num);
 		op_1.push_back("%vec_" + to_string(num));
 		setOpRange(op_1, op1);
-		cout << "op_1: " << op_1[0] << "_" << op_1[1] << "_" << op_1[2] << "_" << endl;
+		//cout << "  op_1: " << op_1[0] << "_ " << op_1[1] << "_" << op_1[2] << "_" << endl;
 		//op_1.push_back(vecIns);
 		//setRangeIns(op1);
 
 		string matIns = setInitIns(op2.getInitIns(), "mat", num);
 		op_2.push_back("%mat_" + to_string(num));
 		setOpRange(op_2, op2);
-		cout << "op_2: " << op_2[0] << "_" << op_2[1] << "_" << op_2[2] << "_" << endl;
+		//cout << "  op_2: " << op_2[0] << "_ " << op_2[1] << "_" << op_2[2] << "_" << endl;
 
 		string goalIns = setInitIns(goal.getInitIns(), "out", num);
 		dest.push_back("%out_" + to_string(num));
 		setOpRange(dest, goal);
-		cout << "goal: " << dest[0] << "_" << dest[1] << "_" << dest[2] << "_" << endl;
+		//cout << "  goal: " << dest[0] << "_ " << dest[1] << "_" << dest[2] << "_" << endl;
 
 
 		InitIns += vecIns + matIns + goalIns;
@@ -86,19 +86,19 @@ void Pattern::setContent(VarList op1, VarList op2, VarList goal, int num)
 		string vecIns = setInitIns(op1.getInitIns(), "mat1", num);
 		op_1.push_back("%mat1_" + to_string(num));
 		setOpRange(op_1, op1);
-		cout << "op_1: " << op_1[0] << "_" << op_1[1] << "_" << op_1[2] << "_" << endl;
+		//cout << "  op_1: " << op_1[0] << "_ " << op_1[1] << "_" << op_1[2] << "_" << endl;
 		//op_1.push_back(vecIns);
 		//setRangeIns(op1);
 
 		string matIns = setInitIns(op2.getInitIns(), "mat2", num);
 		op_2.push_back("%mat2_" + to_string(num));
 		setOpRange(op_2, op2);
-		cout << "op_2: " << op_2[0] << "_" << op_2[1] << "_" << op_2[2] << "_" << endl;
+		//cout << "  op_2: " << op_2[0] << "_ " << op_2[1] << "_" << op_2[2] << "_" << endl;
 
 		string goalIns = setInitIns(goal.getInitIns(), "out", num);
 		dest.push_back("%out_" + to_string(num));
 		setOpRange(dest, goal);
-		cout << "goal: " << dest[0] << "_" << dest[1] << "_" << dest[2] << "_" << endl;
+		//cout << "  goal: " << dest[0] << "_ " << dest[1] << "_" << dest[2] << "_" << endl;
 
 
 		InitIns += vecIns + matIns + goalIns;
@@ -132,7 +132,7 @@ void Pattern::setRangeIns(vector<string> loopvar, vector<string> looprange, int 
 			rangeInit += ("  " + size + " = add i32 " + looprange[i].substr(0, looprange[i].size() - 1) + ", 1\n");
 			InitIns += rangeInit;
 			rangeMap.insert({ loopvar[i], size});
-			cout << "Insert here ins:_" << loopvar[i] << " " << size << endl;
+			//cout << "Insert here ins:_" << loopvar[i] << " " << size << endl;
 			//cout << "range init ins:_" << rangeInit << endl;
 			//cout << "now Init ins:_" << InitIns << endl;
 		}
@@ -141,7 +141,7 @@ void Pattern::setRangeIns(vector<string> loopvar, vector<string> looprange, int 
 		}
 		else {
 			rangeMap.insert({loopvar[i], looprange[i]});
-			cout << "huohuo_:" << loopvar[i] << " " << looprange[i] << endl;
+			//cout << "huohuo_:" << loopvar[i] << " " << looprange[i] << endl;
 		}
 
 	}
@@ -227,13 +227,13 @@ void Pattern::setOpRange(vector<string> &op, VarList varlist)
 	string row = varlist.getRow();
 	string col = varlist.getCol();
 
-	cout << " row and column:_" << row << "_" << col << endl;
+	//cout << " row and column:_" << row << "_" << col << endl;
 	if (rangeMap.count(row) > 0)
 		row = rangeMap[row];
 	if (rangeMap.count(col) > 0)
 		col = rangeMap[col];
 
-	cout << "   new row and column:_" << row << " _" << col << endl;
+	//cout << "   new row and column:_" << row << " _" << col << endl;
 	op.push_back(row);
 	op.push_back(col);
 }
@@ -271,6 +271,10 @@ void Pattern::setLibFunc()
 	}
 
 	InitIns += funcIns;
+
+	cout << "  op 1: " << op_1[0] << "_ " << op_1[1] << "_" << op_1[2] << "_" << endl;
+	cout << "  op 2: " << op_2[0] << "_ " << op_2[1] << "_" << op_2[2] << "_" << endl;
+	cout << "  goal : " << dest[0] << "_ " << dest[1] << "_" << dest[2] << "_" << endl;
 }
 
 
@@ -436,8 +440,8 @@ void Pattern::deSetContent(VarList op1, VarList op2, VarList goal, int num)
 	InitIns += opOneIns + opTwoIns + goalIns;
 
 	//setLibFunc();
-	cout << "de Init ins:" << endl;
-	cout << InitIns << endl;
+	//cout << "de Init ins:" << endl;
+	//cout << InitIns << endl;
 }
 
 /*Pattern::Pattern(VarList op1, VarList op2, VarList goal, int num, string t, string label, int line)
