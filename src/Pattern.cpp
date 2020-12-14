@@ -256,7 +256,7 @@ void Pattern::setLibFunc()
 			opcode = "2";
 		}
 
-		funcIns = "  call void @CIM_Bitmap(i32 " + opcode + ", i32* " + op_1[0] + ", i32* " + op_2[0] + ", i32* " + dest[0] +  + ", i32 " + op_1[2] + ")\n";
+		funcIns = "  call void @cim_bitmap(i32 " + opcode + ", i32* " + op_1[0] + ", i32* " + op_2[0] + ", i32* " + dest[0] +  + ", i32 " + op_1[2] + ")\n";
 	}
 	else if (type == "mvm") {
 		// call void @cblas_sgemv(i32 101, i32 111, i32 111(Trans), i32 500, i32 1, i32 500, float %beta0, float* %weight0, i32 500, float* %in0, i32 1, float 0.000000e+00, float* %out0, i32 1)
