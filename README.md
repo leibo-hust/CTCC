@@ -33,9 +33,9 @@ Just run the makefile to make.
 
 
 ### Step 3: Setup the Environment
-Copy **librcct.so** to **/usr/lib** or set the **LD_LIBRARY_PATH** variable.
+Copy **librcct.so** to **/usr/lib** and **librcct.h** to **/usr/local/include/** or set the **LD_LIBRARY_PATH** variable.
 
-    cp librcct.so /usr/lib/librcct.so
+    cp librcct.so /usr/lib/ & cp librcct.h /usr/local/include/
     
 Or
 
