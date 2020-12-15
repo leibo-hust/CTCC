@@ -12,7 +12,8 @@
 #include <vector>
 #include <algorithm>
 
-bool isDecompile = false;
+bool isDecompile;
+int flagcount = 0;
 
 using namespace std;
 PatternList patternlist;
@@ -70,6 +71,19 @@ void readFile(string filename) {
 					//---ok block.setTitle(names[0]);
 					//---ok block.setPreds1(names[1]);
 					//---ok block.setPreds2(names[2]);
+					if (flagcount == 0) {
+						cout << "flag title is: " << oneline << endl;
+						if (oneline.find("block_") != string::npos) {		// if is decompilation
+							isDecompile = true;
+							//cout << "is decompilation" << endl;
+						}
+						else {
+							isDecompile = false;
+							//cout << "is not decompilation" << endl;		
+						}
+						flagcount++;
+					}
+
 					block.setTtileAndPreds(oneline);
 					//cout << "|||||||" << endl;
 					//cout << "title:_" << names[0] << endl;
