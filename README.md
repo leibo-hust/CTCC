@@ -68,10 +68,11 @@ Change the ___filename___ variable in ___mian.cpp___ to your own filename. For e
 
     string filename = "test";
 
-### Step 4: Specifies the isDecompile variable.
-Specifies whether the IR is compiled or decompiled. In **function.h**, there is an **isDecompile variable**. If IR is compiled, then set it to ___false___; if it is decompiled, then set it to ___true___.
+### ~~Step 4: Specifies the isDecompile variable.~~
+~~Specifies whether the IR is compiled or decompiled. In **function.h**, there is an **isDecompile variable**. If IR is compiled, then set it to ___false___; if it is decompiled, then set it to ___true___.~~
 
      bool isDecompile = false;
+Now there is no need to set **isDecompile** manually because the compilation tool can set it automatically. (until the decompilation tool is updated and new decompiled IR occur).
 
 ### Step 5: Re-make.
 Recompile the code and run.
