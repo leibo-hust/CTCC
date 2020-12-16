@@ -37,7 +37,7 @@ Copy **librcct.so** to **/usr/lib** and **librcct.h** to **/usr/local/include/**
 
     cp librcct.so /usr/lib/ & cp librcct.h /usr/local/include/
     
-Or
+OR
 
     export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
 
@@ -49,12 +49,12 @@ We've provided a sample file called **mvm.ll** in the ___IR___ directory. You ca
 First you need to get the corresponding LLVM IR file.
 
 #### Compile
-For compilation, we use **clang/clang++** to compile the source code to LLVM IR(.ll).
+For compilation, we use **clang/clang++** to compile the source code to LLVM IR (.ll).
 
     clang/clang++ source.c/cpp -emit-llvm -S -fno-discard-value-names -o source.ll
 
 #### Decompile
-For decompilation, we use [McSema](https://github.com/lifting-bits/mcsema) to lift the binary to LLVM IR (.ll). First, you shoud install the McSema, then use the follow command to lift the binary to IR.
+For decompilation, we use [McSema](https://github.com/lifting-bits/mcsema) to lift the binary to LLVM IR (.ll). First, you shoud install the McSema, then use the following commands to lift the binary to IR.
 
     mcsema-dyninst-disass --os linux --arch amd64 --output source.cfg --binary source --entrypoint main --std_defs Docs/linux.txt
     mcsema-lift-9.0 --os linux --arch amd64 --cfg source.cfg --output source.bc --abi_libraries Docs/abi.bc --explicit_args --explicit_args_count 8
@@ -68,10 +68,11 @@ Change the ___filename___ variable in ___mian.cpp___ to your own filename. For e
 
     string filename = "test";
 
-### Step 4: Specifies the isDecompile variable.
-Specifies whether the IR is compiled or decompiled. In **function.h**, there is an **isDecompile variable**. If IR is compiled, then set it to ___false___; if it is decompiled, then set it to ___true___.
+### ~~Step 4: Specifies the isDecompile variable.~~
+~~Specifies whether the IR is compiled or decompiled. In **function.h**, there is an **isDecompile variable**. If IR is compiled, then set it to ___false___; if it is decompiled, then set it to ___true___.~~
 
      bool isDecompile = false;
+Now there is no need to set **isDecompile** manually because the compilation tool can set it automatically. (until the decompilation tool is updated and new decompiled IR occur).
 
 ### Step 5: Re-make.
 Recompile the code and run.
@@ -82,7 +83,12 @@ Recompile the code and run.
 At the end of the run, you'll get a new file - ***your filename _add.ll*** (for example: test_add.ll), which is the target file. You can recompile and execute it.
 
 ### Step 6: Recompile the target code.
-Use the follow command to recompile the target code into an executable program that can run under the **CIM** architecture.
+Use the following commands to recompile the target code into an executable program that can run under the **CIM** architecture.
+#### Compilation
 
-    clang -rdynamic -o source_new.out source_add.ll /usr/local/lib/libmcsema_rt64-9.0.a -Wno-unknown-warning-option -Wno-override-module -Wall -Werror -lm -m64 -lrcct -lopenblas
+    clang/clang++ source_add.ll -o target.out -lrcct -lopenblas
+
+#### Decompilation
+
+    clang/clang++ -rdynamic -o source_new.out source_add.ll /usr/local/lib/libmcsema_rt64-9.0.a -Wno-unknown-warning-option -Wno-override-module -Wall -Werror -lm -m64 -lrcct -lopenblas
 
