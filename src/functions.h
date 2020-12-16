@@ -75,11 +75,11 @@ void readFile(string filename) {
 						cout << "flag title is: " << oneline << endl;
 						if (oneline.find("block_") != string::npos) {		// if is decompilation
 							isDecompile = true;
-							//cout << "is decompilation" << endl;
+							cout << "is decompilation" << endl;
 						}
 						else {
 							isDecompile = false;
-							//cout << "is not decompilation" << endl;		
+							cout << "is not decompilation" << endl;		
 						}
 						flagcount++;
 					}
@@ -152,7 +152,7 @@ void readFile(string filename) {
 				//btree.Init(&blocklist.findById(0));
 
 				Block b = blocklist.findById(0);
-				Block *initblock = &b;
+				// Block *initblock = &b;
 				//cout << "the     title:_" << blocklist.findById(0).getTitle() << endl;
 				//cout << "TTThe     title:_" << initblock->getTitle() << endl;
 				Node *n = new Node;
@@ -414,7 +414,6 @@ void decompileJudgePattern(BlockList looplist)
 	string line, newline;
 	string goal, op1, op2;			//the operands in the operation
 	string data_type;				// the type of the data
-	int varcount = 0;
 
 	for (int i = 0; i < bodycontent.size(); i++) {
 		line = bodycontent[i];
@@ -813,13 +812,13 @@ vector<string> findLoopVarAndRange(Block block)
 			}
 		
 			if (regex_search(line, s, icmp)) {				//Find the true loop range: slt, sle, sgt, sge
-				if (b = line.find("slt") != string::npos) {		// if is the slt, then the range = last var: slt i32 %5, 100(%4)
+				if ((b = line.find("slt")) != -1) {		// if is the slt, then the range = last var: slt i32 %5, 100(%4)
 					e = line.find(",", b);
 					range = line.substr(e + 2);
 					//std::cout << "slt range is:_" << range << "_" << endl;
 				}
 				else {										// others, the range = last var + 1: slt i32 %5, 99(%4) [99 + 1,(%4 + 1)]
-					if (b = line.find("sle") != string::npos) {		// if is the slt, then the range = last var: slt i32 %5, 100(%4)
+					if ((b = line.find("sle")) != -1) {		// if is the slt, then the range = last var: slt i32 %5, 100(%4)
 						e = line.find(",", b);
 						range = line.substr(e + 2);
 						//cout << "sle range is:_" << range << "_" << endl;
@@ -1216,7 +1215,7 @@ vector<string> oldfindLoopVarAndRange(Block block)
 
 
 			}
-			/*else if (regex_search(line, s, add)) {			//add +,sge or sgt
+			else if (regex_search(line, s, add)) {			//add +,sge or sgt
 
 
 			}
@@ -1239,18 +1238,21 @@ vector<string> oldfindLoopVarAndRange(Block block)
 string findDeRange(string var, vector<string> loopvar, vector<string> loopinitvar, vector<string> looprange)
 {
 	//cout << "var findRANGE is:_" << var << "_" << endl;
+	string res;
 	for (int j = 0; j < loopvar.size(); j++) {
 		//cout << "findDErange, loopvar and loopinitvar:_" << loopvar[j] << " " << loopinitvar[j] << "_" << endl;
 		if (var == loopvar[j] || var == loopinitvar[j]) {
 			//cout << "FIND!" << endl;
-			return looprange[j];
+			//is ok: return looprange[j];
+			res = looprange[j];
 			break;
 		}
 		/*else {
-			cout << "we didn't find the var,sorry" << endl;
-			return "test";
+			cout << "Didn't find the var" << endl;
 		}*/
 	}
+
+	return res;
 }
 
 

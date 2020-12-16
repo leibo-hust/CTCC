@@ -1,14 +1,17 @@
-src = $(wildcard src/*.cpp)  
-obj = $(patsubst %.cpp, %.o, $(src))  
-target = main  
-CXX = g++ 
+SOURCE_FILE = $(wildcard src/*.cpp)
+OBJS = $(patsubst %.cpp, %.o, $(SOURCE_FILE))
+CC = g++
+CFLAGS = -c -Wall -Wno-sign-compare
+LFLAGS = -Wall
 
-$(target): $(obj)
-	$(CXX) $(obj) -o $(target) 	
-
+all: main
+main: $(OBJS)
+	$(CC) $(LFLAGS) $^ -o $@
 %.o: %.cpp
-	$(CXX) -c $< -o $@ 
+	$(CC) $(CFLAGS) $< -o $@
+src/main.o: src/main.cpp src/functions.h src/Insert.h
+	$(CC) $(CFLAGS) $< -o $@
 
 .PHONY: clean  
-clean:  
-	rm -rf $(obj) $(target) 
+clean:
+	rm -rf $(OBJS) main
