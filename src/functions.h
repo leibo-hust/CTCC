@@ -11,6 +11,7 @@
 #include <cstring>
 #include <vector>
 #include <algorithm>
+#include <limits.h>
 
 bool isDecompile;
 int flagcount = 0;
@@ -35,6 +36,7 @@ string findDeRange(string var, vector<string> loopvar, vector<string> loopinitva
 vector<string> findDeMat(string line1, string line2, vector<string> loopvar, vector<string> loopinitvar, vector<string> looprange, vector<string> bodycontent);
 string datatype(string line);
 string DealDeLoopRange(vector<string> &looprange, int num);
+vector<string> findAlphaAndBeta(string& loadalpha, VarList& destVarList, BlockList& looplist);
 
 //create a BlockList for every function
 void readFile(string filename) {
@@ -337,17 +339,46 @@ void judgePattern(BlockList looplist)
 			mulist.buildList(looplist, goal);
 			//cout << "-----------the init instruction of the two op of mul:_" << mul1list.getinitIns() << endl; 
 			//cout << "_and_" << mul2list.getinitIns() << "_" << endl;
-
-			for (int j = i; j < bodycontent.size(); j++) {
+			string mulalphains = "";
+			int mulalphalnum = INT_MAX;
+			bool findAlpha = false;
+			vector<string> alphabetaargs;
+			string loadalpha = "";
+			for (int j = i + 1; j < bodycontent.size(); j++) {
+				// cout << "new line: " << j << endl;
 				line = bodycontent[j];
+				// bool hasAplha = false;
+				if (regex_search(line, s, mul)) {		// mul alpha
+					vector<string> p3 = findOperands(line);
+					// cout << "------------p3 [1]-" << p3[0] << "-" << p3[2] << endl;
+					if (p3[1] == goal || p3[2] == goal) {
+						// cout << "mul alpha match........................\n";
+						mulalphains = line;
+						mulalphalnum = j;
+						loadalpha = p3[1] == goal ? p3[2] : p3[1];
+						mulist.addVar(p3[0]);
+						findAlpha = true;
+						continue;
+					}
+				}
+
 				if (regex_search(line, s, add)) {
+					// cout << "add line: " << line << endl;	
 					//cout << "matching add" << endl;
 					string addop1 = findOperands(line)[1];
 					string addop2 = findOperands(line)[2];
-					//cout << "add op are:_" << addop1 << "_" << addop2 << "_" << endl;
+					// cout << "add op are:_" << addop1 << "_" << addop2 << "_" << endl;
 					if (mulist.findVar(addop1) || mulist.findVar(addop2)) {
+						// cout << "in the list\n";
 						mul1list.buildList(looplist, op1);
+						mul1list.showList();
+						// cout << "   the type of mul1: " << mul1list.getType() << endl; 
 						mul2list.buildList(looplist, op2);
+						// mul2list.showList();
+						//cout << "   the type of mul2: " << mul2list.getType() << endl;
+						if (mul1list.getType() == "matrix") {
+							swap(mul1list, mul2list);
+						} 
 						VarList resultList;
 						resultList.buildList(looplist, addop1);
 						if (varcount == 2) {
@@ -359,31 +390,91 @@ void judgePattern(BlockList looplist)
 							//cout << "looprange:_" << loopvar[0] << "_" << looprange[0] << endl;
 							//cout << "looprange:_" << loopvar[1] << "_" <<looprange[1] << endl;
 							int num = patternlist.size();
+							if (findAlpha) {
+								alphabetaargs = findAlphaAndBeta(loadalpha, resultList, looplist);
+								p.setAlphaBeta(alphabetaargs);
+							}
 							p.setRangeIns(loopvar, looprange, num);
 							p.setContent(mul1list, mul2list, resultList, num);
 							p.setbrlabels(looplist);
 							patternlist.add(p);
 							//cout << "_and_" << mul2list.getinitIns() << "_" << endl;
-						}
-						else if (varcount == 3) {
+						} else if (varcount == 3) {
 							cout << "Find the MMM pattern." << endl;
 							Pattern p = Pattern("mmm");
 							//PatternList patternlist;
 							//cout << "looprange:_" << loopvar[0] << "_" << looprange[0] << endl;
 							//cout << "looprange:_" << loopvar[1] << "_" <<looprange[1] << endl;
+							// vector<string> res = findAlphaAndBeta(mul1list, looplist);
+							// p.setAlphaBeta(res);
 							int num = patternlist.size();
 							p.setRangeIns(loopvar, looprange, num);
+							VarList alist, blist;
 							p.setContent(mul1list, mul2list, resultList, num);
 							p.setbrlabels(looplist);
 							patternlist.add(p);
 						}
 					}
-					
+					i = j;
 				}
 			}
 		}
 	}
 
+}
+
+
+vector<string> findAlphaAndBeta(string& loadalpha, VarList& resVarList, BlockList& looplist) {
+	vector<string> res = {"float", "1.0", "", "float", "0.0"};		// default value: alpha type, alpha value, beta type, beta value.
+	int len = looplist.getListSize();
+	vector<string> innermostbody = looplist.findById(len - 1).getContent();
+	Block penultimateBlock = looplist.findById(len - 3);
+	vector<string> penultimatebody = penultimateBlock.getContent();
+	// find beta first
+	regex mul(" = [f]*mul ");
+	regex load(loadalpha + " = load");
+	smatch s;
+	for (string& ins : penultimatebody) {	
+		if (regex_search(ins, s, mul)) {		// 如果存在mul语句
+			cout << "in findbeta: " << ins << endl;
+			vector<string> opset = findOperands(ins);
+			string op1 = opset[1], op2 = opset[2];
+			string ty = datatype(ins);
+			resVarList.showList();
+			BlockList penultimatelist;
+			penultimatelist.insert(penultimateBlock);
+			VarList op1list, op2list;
+			op1list.buildList(penultimatelist, op1);
+			op2list.buildList(penultimatelist, op2);
+			if (resVarList == op1list) {
+				res[4] = op2;
+				res[3] = ty;
+				// cout << "lalallalal: " << op2 << endl; 
+				break;
+			} else if (resVarList == op2list) {
+				res[4] = op1;
+				res[3] = ty;
+				// cout << "lalallalal: " << op2 << endl; 
+				break;
+			} else {
+				// cout << "aaaaaa\n";
+			}
+		}
+	}
+
+	// find alpha second
+	for (string& ins :innermostbody) {	
+		if (regex_search(ins, s, load)) {		// 如果存在load语句
+			// cout << "--load ins: " << ins << endl;
+			string ty = datatype(ins);
+			res[1] = ty;
+			int e = ins.find("=");
+			res[2] = ins.substr(e - 1) + "\n";			// -> " = load ......."
+			// cout << "-" << res[2] << "-" << endl;
+		}
+	}
+
+	return res;
 }
 
 
