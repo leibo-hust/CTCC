@@ -24,7 +24,6 @@ void VarList::buildList(BlockList blocklist, string var)
 	//% 144 = inttoptr i64 %385 to i32*
 	//%145 = load i32, i32* %144
 	//sotre
-	varlist.push_back(var);
 	cout << "Building the varlist......." << endl;
 	cout << "  var is:_" << var << "_" << endl;
 	int len = blocklist.getListSize();
@@ -32,6 +31,9 @@ void VarList::buildList(BlockList blocklist, string var)
 		vector<string> content = blocklist.findById(i).getContent();
 		int n = content.size();
 		for (int j = n - 1; j >= 0; j--) {
+			if (varlist.empty() || varlist.back() != var) {
+				varlist.push_back(var);
+			}
 			string ins = content[j];
 			//cout << "__" << ins << endl;
 			//string ins = "%j = load i32, i32* %x, align 4";
@@ -84,17 +86,66 @@ void VarList::buildList(BlockList blocklist, string var)
 				var = temp;
 			}
 			else if (regex_search(ins, s, getelment)) {		//set the init ins
+				// cout << "///////////////////////////////getelementptr: " << ins << endl;
 				//cout << "getelement init ins is:_" << ins << "_" << endl;
+				int old_j = j;
 				int b = ins.find("=");
 				int e = ins.find("%", b);
 				int t = ins.find(",", e);
 				string array = ins.substr(e, t - e);
-
+				// add to init ins
+				initIns.push_back(ins);
 				//Determine the type based on the first two instructions for getelementptr
 				regex vadd(" = add"), vload(" = load ");
-				if (regex_search(content[j - 2], s, vadd) || ins.find("%arrayidx", b) != string::npos) {
+				// regex newequal(array + " = ");			//use to find the init ins
+				regex middlegetelment(array + " = getelementptr ");			//use to find the init ins
+				// cout << "111111111111 array is: " << ins << " ," << array << endl;
+				bool isMat = false;
+				for (int k = j - 1; k >= 0; k--) {
+					if (regex_search(content[k], s, middlegetelment)) {
+						initIns.push_back(content[k]);
+						isMat = true;
+						int bb = content[k].find("*") + 2;
+						int tt = content[k].find(",", bb);
+						string mat = content[k].substr(bb, tt - bb);
+						// cout << "------~~~~mat:-" << mat << "-" << endl;
+						varlist.push_back(mat);
+						j = k;
+						break;
+					}
+				}
+
+				if (isMat) {
 					type = "matrix";
-					regex rangeload(" = load +[i32|i16]+, +[i32|i16]+\\* %[a-z, 0-9]*,");
+					regex rangeload(" = load +[i32|i16]+, +[i32|i16]+\\* %[a-z, 0-9]*,");	
+					int count = 0;
+					for (int k = old_j; k >= 0; k--) {
+						if (regex_search(content[k], s, rangeload)){
+							int b = content[k].find("*"), e = content[k].find(",", b);
+							// cout << "----111111 in set range: " << content[k] << endl;
+							string r = content[k].substr(b + 2, e - b - 2);
+							if (count == 0) {
+								col = r;
+							}
+							else if (count == 1) {
+								row = r;
+							} else {
+								break;
+							}
+							count++;
+						}
+					}
+				} else {
+					type = "vector";
+					row = "1";
+					int b = content[j - 2].find("*"), e = content[j - 2].find(",", b);
+					col = content[j - 2].substr(b + 2, e - b - 2);
+				}
+
+
+				/*if (regex_search(content[j - 2], s, vadd) || ins.find("%arrayidx", b) != string::npos) {
+					type = "matrix";
+					regex rangeload(" = load +[i32|i16]+, +[i32|i16]+\\* %[a-z, 0-9]*,");	
 					int count = 0;
 					for (int k = j; k >= 0; k--) {
 						if (regex_search(content[k], s, rangeload)){
@@ -105,13 +156,25 @@ void VarList::buildList(BlockList blocklist, string var)
 							}
 							else if (count == 1) {
 								row = r;
-								break;
+								// j = k;
+								// break;
 							}
 							count++;
+						} else if (regex_search(content[k], s, newequal)) {
+							//cout << "matching....." << newins << endl;
+							//initIns = newins + "\n" + initIns;
+							initIns.push_back(content[k]);
+							int bb = ins.find("*");
+							int tt = ins.find(",", bb);
+							string mat = ins.substr(bb, tt - bb);
+							cout << "------~~~~mat" << mat << "-" << endl;
+							varlist.push_back(mat);
+							j = k;
+							break;
 						}
 					}
 					//cout << "col and row Is:_" << row << "_" << col << "_" << endl;
-				}
+				} 
 				else if (regex_search(content[j - 2], s, vload)) {
 					//cout << "t:_" << content[j - 2] << endl;
 					type = "vector";
@@ -120,7 +183,7 @@ void VarList::buildList(BlockList blocklist, string var)
 					col = content[j - 2].substr(b + 2, e - b - 2);
 					//cout << "col is:_" << col << "_" << endl;
 
-				}
+				}*/
 				//cout << "current ins is:_" << ins << endl;
 				//cout << "before twor is:_" << content[j - 2] << endl;
 				//cout << "judge type is:_" << type << endl;
@@ -128,17 +191,8 @@ void VarList::buildList(BlockList blocklist, string var)
 				//cout << "the array is:_" << array << endl;
 				//var = array;
 				//initIns = ins;
-				initIns.push_back(ins);
-				for (int k = j - 1; k >= 0; k--) {
-					string newins = content[k];
-					regex newequal(array + " = ");			//use to find the init ins
-					if (regex_search(newins, s, newequal)) {
-						//cout << "matching....." << newins << endl;
-						//initIns = newins + "\n" + initIns;
-						initIns.push_back(newins);
-						break;
-					}
-				}
+				// cout << "array is:-" << array << endl;
+				var = array;
 			}
 			else if (regex_search(ins, s, equal)) {		//set the init ins
 				//cout << "init ins is:_" << ins << "_" << endl;
@@ -153,6 +207,10 @@ void VarList::buildList(BlockList blocklist, string var)
 		}
 	}
 	
+}
+
+void VarList::addVar(string& var) {
+	varlist.push_back(var);
 }
 
 
@@ -322,11 +380,11 @@ vector<string> VarList::getRange()
 
 void VarList::showList()
 {
-	cout << "show all the var in the list:" << endl;
+	cout << "----------------show all the var in the list:" << endl;
 	for (int i = 0; i < varlist.size(); i++) {
 		cout << varlist[i] << endl;
 	}
-	cout << "end-----------------" << endl;
+	cout << "-----------------end" << endl;
 }
 
 vector<string> VarList::getList()
@@ -337,6 +395,19 @@ vector<string> VarList::getList()
 int VarList::Size()
 {
 	return varlist.size();
+}
+
+bool VarList::operator==(VarList& other) {
+	vector<string> otherlist = other.getList();
+	for (int i = 0; i < otherlist.size(); i++) {
+		for (int j = 0; j < varlist.size(); j++) {
+			if (otherlist[i] == varlist[j]) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 string VarList::getVar(int i)

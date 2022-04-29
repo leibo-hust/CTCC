@@ -72,7 +72,30 @@ void Pattern::setContent(VarList op1, VarList op2, VarList goal, int num)
 		dest.push_back("%out_" + to_string(num));
 		setOpRange(dest, goal);
 		//cout << "  goal: " << dest[0] << "_ " << dest[1] << "_" << dest[2] << "_" << endl;
+		
+		if (alpha[2] != "") {		// need to load alpha
+			string alphavar = "%alpha_" + to_string(num);
+			string loadalpha = "  load_alpha_" + to_string(num);
+			if (alpha[0] != "float") {
+				// 有alpha的时候，才需要类型转换
+				InitIns += ("  " + loadalpha + alpha[2]);		// 首先load到中间变量
+				InitIns +=  (alphavar + " = sitofp float " + loadalpha + " to float\n");
+			} else {
+				InitIns += ("  " + alphavar + alpha[2]);
+			}
 
+			alpha[1] = alphavar;
+		}
+
+		if (beta[1] != "0.0") {		// has beta
+			string betavar = "%beta_" + to_string(num);
+			if (beta[0] != "float") {
+				// 类型转换
+				InitIns +=  (betavar + " = sitofp float " + beta[1] + " to float\n");
+				beta[1] = betavar;
+			}
+		}
+		
 
 		InitIns += vecIns + matIns + goalIns;
 		//cout << "test:_" << endl;
@@ -83,6 +106,30 @@ void Pattern::setContent(VarList op1, VarList op2, VarList goal, int num)
 
 	}
 	else if (type == "mmm") {
+
+		if (alpha[2] != "") {		// need to load alpha
+			string alphavar = "%alpha_" + to_string(num);
+			string loadalpha = "  %load_alpha_" + to_string(num);
+			if (alpha[0] != "float") {
+				// 有alpha的时候，才需要类型转换
+				InitIns += ("  " + loadalpha + alpha[2]);		// 首先load到中间变量
+				InitIns +=  (alphavar + " = sitofp float " + loadalpha + " to float\n");
+			} else {
+				InitIns += ("  " + alphavar + alpha[2]);
+			}
+
+			alpha[1] = alphavar;
+		}
+
+		if (beta[1] != "0.0") {		// has beta
+			string betavar = "%beta_" + to_string(num);
+			if (beta[0] != "float") {
+				// 类型转换
+				InitIns +=  (betavar + " = sitofp float " + beta[1] + " to float\n");
+				beta[1] = betavar;
+			}
+		}
+
 		string vecIns = setInitIns(op1.getInitIns(), "mat1", num);
 		op_1.push_back("%mat1_" + to_string(num));
 		setOpRange(op_1, op1);
@@ -168,6 +215,12 @@ string setInitIns(vector<string> orgIns, string ovar, int num)
 	// %arrayidx69 = getelementptr inbounds [2 x float], [2 x float]* %resC, i64 0, i64 %idxprom68
 	// %vec1 =  getelementptr inbounds [2 x float], [2 x float]* %resC, i64 0, i64 0
 	// %arrayidx108 = getelementptr inbounds float, float* %54, i64 %idxprom66
+	/*cout << "              in setinit: \n";
+	for (string& s : orgIns) {
+			cout << s << endl;
+	}
+	cout << "~~~~~~~~~~~~~~~~~~end\n";
+	*/
 	string newIns;
 	string var = ovar, middlevar;
 	int len = orgIns.size();
@@ -260,11 +313,11 @@ void Pattern::setLibFunc()
 	}
 	else if (type == "mvm") {
 		// call void @cblas_sgemv(i32 101, i32 111, i32 111(Trans), i32 500, i32 1, i32 500, float %beta0, float* %weight0, i32 500, float* %in0, i32 1, float 0.000000e+00, float* %out0, i32 1)
-		funcIns = "  call void @cblas_sgemv(i32 101, i32 112, i32 " + op_2[1] + ", i32 " + op_2[2] + ", float 1.000000e+00, float* " + op_2[0] + ", i32 " + op_2[2] + ", float* " + op_1[0] + ", i32 1, float 0.000000e+00, float* " + dest[0] + ", i32 1)\n";
+		funcIns = "  call void @cblas_sgemv(i32 101, i32 112, i32 " + op_2[1] + ", i32 " + op_2[2] + ", float " + alpha[1] + ", float* " + op_2[0] + ", i32 " + op_2[2] + ", float* " + op_1[0] + ", i32 1, float " + beta[1] + ", float* " + dest[0] + ", i32 1)\n";
 	}
 	else if (type == "mmm") {
 		//call void @cblas_sgemm(i32 101, i32 111, i32 111(Trans), i32 500, i32 1, i32 500, float %beta0, float* %weight0, i32 500, float* %in0, i32 1, float 0.000000e+00, float* %out0, i32 1)
-		funcIns = "  call void @cblas_sgemm(i32 101, i32 111, i32 111, i32 " + op_1[1] + ", i32 " + op_2[2] + ", i32 " + op_1[2] + ", float 1.000000e+00, float* " + op_1[0] + ", i32 " + op_1[2] + ", float* " + op_2[0] +", i32 " + op_2[2] + ", float 0.000000e+00, float* " + dest[0] + ", i32 " + dest[2] + ")\n";
+		funcIns = "  call void @cblas_sgemm(i32 101, i32 111, i32 111, i32 " + op_1[1] + ", i32 " + op_2[2] + ", i32 " + op_1[2] + ", float " + alpha[1] + ", float* " + op_1[0] + ", i32 " + op_1[2] + ", float* " + op_2[0] +", i32 " + op_2[2] + ", float " + beta[1] + ", float* " + dest[0] + ", i32 " + dest[2] + ")\n";
 	}
 	else if (type == "lib") {
 
@@ -461,4 +514,12 @@ void Pattern::insertContent(string addIns)
 {
 	InitIns += addIns;
 	//content.push_back(addIns);
+}
+
+void Pattern::setAlphaBeta(vector<string>& res) {
+	alpha[0] = res[0];
+	alpha[1] = res[1];
+	alpha[2] = res[2];
+	beta[0] = res[3];
+	beta[1] = res[4];
 }

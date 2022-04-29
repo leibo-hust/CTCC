@@ -16,6 +16,7 @@ private:
 		
 public:
 	bool findVar(string goalvar);		//judge if the variable is in the list
+	void addVar(string& var);
 	void buildList(BlockList blocklist, string var);		//according to the blocklist of the function and the key var, build the varList;
 	//string getinitIns();				//get the init instuction
 	vector<string> getInitIns();
@@ -32,6 +33,7 @@ public:
 	vector<string> getList();
 	int Size();
 	string getVar(int i);
+	bool operator==(VarList& other);
 
 	//void setRange(string line, vector<string> varlist);
 	//vector<string> getRange();

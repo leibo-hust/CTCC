@@ -18,9 +18,12 @@ private:
 	string br_pattern_label;		//the label that jump to the pattern block
 	int insertLine;					//insert place
 	string br_next_block;			//block that the pattern should jump to
-	vector <string> op_1;			// op_1[3]: op1_name, op1_row, op1_col
-	vector <string> op_2;
-	vector <string> dest;
+	vector<string> op_1;			// op_1[3]: op1_name, op1_row, op1_col
+	vector<string> op_2;
+	vector<string> dest;
+
+	vector<string> alpha = {"float", "1.0", ""};		// type, value, init ins
+	vector<string> beta = {"float", "0.0"};			// type, value
 
 	//range instructons
 	map<string, string> rangeMap;
@@ -47,6 +50,7 @@ public:
 	void deSetRange(int order, string row, string col);
 
 	void insertContent(string addIns);
+	void setAlphaBeta(vector<string>& res);
 
 	//Pattern(string t, int l);
 	Pattern(string t);
