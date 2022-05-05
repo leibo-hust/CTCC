@@ -25,18 +25,21 @@ vector <string> NextBlocks(string oneline);
 string BlcokType(Block block);
 string BodyKeywords(Block block);
 void analysisLoops(BlockList list);
-void findLoopsInTree(Node *root);
+void findLoopsInTree(Node *root, Block& entry);
 void judgePattern(BlockList looplist);
-void decompileJudgePattern(BlockList looplist);
+void decompileJudgePattern(BlockList looplist, Block& entry);
 vector<string> findLoopVarAndRange(Block b);
 vector<string> findOperands(string line);
 //void SortBlockList(BlockList originlist);
 bool isEqual(VarList list1, VarList list2);
 string findDeRange(string var, vector<string> loopvar, vector<string> loopinitvar, vector<string> looprange);
 vector<string> findDeMat(string line1, string line2, vector<string> loopvar, vector<string> loopinitvar, vector<string> looprange, vector<string> bodycontent);
+vector<string> findDeMat(VarList& add1op1, VarList& add1op2, VarList& add2op1, VarList& add2op2, vector<string>& loopvar, vector<string>& loopinitvar, vector<string>& looprange);
+vector<string> findDeVec(VarList& addop1, VarList& addop2, vector<string>& loopvar, vector<string>& loopinitvar, vector<string>& looprange);
 string datatype(string line);
 string DealDeLoopRange(vector<string> &looprange, int num);
 vector<string> findAlphaAndBeta(string& loadalpha, VarList& destVarList, BlockList& looplist);
+vector<string> defindAlphaAndBeta(string& loadalpha, VarList& destVarList, BlockList& looplist);
 
 //create a BlockList for every function
 void readFile(string filename) {
@@ -174,7 +177,7 @@ void readFile(string filename) {
 				std::cout << "Building the binary tree................" << std::endl;
 				//btree.printTree(n);
 				//------------btree.findLoops(n);
-				findLoopsInTree(btree.getRoot());
+				findLoopsInTree(btree.getRoot(), b);
 				//cout << "root block title:_" << n->block.getTitle() << endl;
 				//Block bl = n->right->block;
 				//cout << "b. title is:_" << bl.getTitle() << endl;
@@ -210,7 +213,7 @@ void readFile(string filename) {
 
 
 
-void findLoopsInTree(Node *root)
+void findLoopsInTree(Node *root, Block& entry)
 {
 	BlockList looplist;
 	if (root != NULL) {
@@ -239,18 +242,18 @@ void findLoopsInTree(Node *root)
 			//cout << "------------------------------find loop end--------------------" << endl;
 			//analysisLoops(looplist);
 			if (isDecompile) {
-				decompileJudgePattern(looplist);
+				decompileJudgePattern(looplist, entry);
 			}
 			else {
 				judgePattern(looplist);
 			}
 
-			findLoopsInTree(root->left);
+			findLoopsInTree(root->left, entry);
 		}
 		else {
 			//cout << "others:" << Tree->block.getTitle() << endl;
-			findLoopsInTree(root->right);
-			findLoopsInTree(root->left);
+			findLoopsInTree(root->right, entry);
+			findLoopsInTree(root->left, entry);
 		}
 	}
 }
@@ -358,8 +361,8 @@ void judgePattern(BlockList looplist)
 						loadalpha = p3[1] == goal ? p3[2] : p3[1];
 						mulist.addVar(p3[0]);
 						findAlpha = true;
-						continue;
 					}
+					continue;
 				}
 
 				if (regex_search(line, s, add)) {
@@ -408,6 +411,10 @@ void judgePattern(BlockList looplist)
 							// vector<string> res = findAlphaAndBeta(mul1list, looplist);
 							// p.setAlphaBeta(res);
 							int num = patternlist.size();
+							if (findAlpha) {
+								alphabetaargs = findAlphaAndBeta(loadalpha, resultList, looplist);
+								p.setAlphaBeta(alphabetaargs);
+							}
 							p.setRangeIns(loopvar, looprange, num);
 							VarList alist, blist;
 							p.setContent(mul1list, mul2list, resultList, num);
@@ -423,63 +430,8 @@ void judgePattern(BlockList looplist)
 
 }
 
-
-vector<string> findAlphaAndBeta(string& loadalpha, VarList& resVarList, BlockList& looplist) {
-	vector<string> res = {"float", "1.0", "", "float", "0.0"};		// default value: alpha type, alpha value, beta type, beta value.
-	int len = looplist.getListSize();
-	vector<string> innermostbody = looplist.findById(len - 1).getContent();
-	Block penultimateBlock = looplist.findById(len - 3);
-	vector<string> penultimatebody = penultimateBlock.getContent();
-	// find beta first
-	regex mul(" = [f]*mul ");
-	regex load(loadalpha + " = load");
-	smatch s;
-	for (string& ins : penultimatebody) {	
-		if (regex_search(ins, s, mul)) {		// 如果存在mul语句
-			cout << "in findbeta: " << ins << endl;
-			vector<string> opset = findOperands(ins);
-			string op1 = opset[1], op2 = opset[2];
-			string ty = datatype(ins);
-			resVarList.showList();
-			BlockList penultimatelist;
-			penultimatelist.insert(penultimateBlock);
-			VarList op1list, op2list;
-			op1list.buildList(penultimatelist, op1);
-			op2list.buildList(penultimatelist, op2);
-			if (resVarList == op1list) {
-				res[4] = op2;
-				res[3] = ty;
-				// cout << "lalallalal: " << op2 << endl; 
-				break;
-			} else if (resVarList == op2list) {
-				res[4] = op1;
-				res[3] = ty;
-				// cout << "lalallalal: " << op2 << endl; 
-				break;
-			} else {
-				// cout << "aaaaaa\n";
-			}
-		}
-	}
-
-	// find alpha second
-	for (string& ins :innermostbody) {	
-		if (regex_search(ins, s, load)) {		// 如果存在load语句
-			// cout << "--load ins: " << ins << endl;
-			string ty = datatype(ins);
-			res[1] = ty;
-			int e = ins.find("=");
-			res[2] = ins.substr(e - 1) + "\n";			// -> " = load ......."
-			// cout << "-" << res[2] << "-" << endl;
-		}
-	}
-
-	return res;
-}
-
-
 //Decompilation ------ judge whether the block tree is the pattern and the type of the pattern
-void decompileJudgePattern(BlockList looplist)
+void decompileJudgePattern(BlockList looplist, Block& entry)
 {
 	cout << "Judging if there is a pattern......" << endl;
 	int len = looplist.getListSize();
@@ -505,6 +457,10 @@ void decompileJudgePattern(BlockList looplist)
 	string line, newline;
 	string goal, op1, op2;			//the operands in the operation
 	string data_type;				// the type of the data
+	vector<string> needContent = entry.getContent();
+	for (string& ins : bodycontent) {
+		needContent.emplace_back(ins);
+	}
 
 	for (int i = 0; i < bodycontent.size(); i++) {
 		line = bodycontent[i];
@@ -582,13 +538,42 @@ void decompileJudgePattern(BlockList looplist)
 			//find the operands
 			int addcount = addIns.size();
 			//cout << "the count of the add ins is:_" << addcount << "_" << endl;
+			string mulalphains = "", loadalpha = "";
+			int mulalphalnum = -1;
+			bool findAlpha = false;
+			VarList mulist;
+			goal = findOperands(line)[0];
+			mulist.deBuilidVarList(needContent, goal);
+			// mulist.showList();
 
 			for (int j = i + 1; j < bodycontent.size(); j++) {		//continue to find the add/fadd
 				newline = bodycontent[j];
-
 				if (regex_search(newline, s, ptradd)) {
 					addIns.push_back(newline);
 					//cout << "if new add ins" << endl;
+				}
+
+				if (regex_search(newline, s, mul)) {		// mul alpha
+					vector<string> p3 = findOperands(newline);
+					// cout << "------------p3 [1]-" << p3[0] << "-" << p3[2] << endl;
+					VarList t1, t2;
+					t1.deBuilidVarList(needContent, p3[1]);
+					t2.deBuilidVarList(needContent, p3[2]);
+					// t2.showList();
+					if (t1 == mulist) {
+						// cout << "mul alpha match........................\n";
+						loadalpha = p3[1];
+						findAlpha = true;
+					} else if (t2 == mulist) {
+						loadalpha = p3[2];
+						findAlpha = true;
+					}
+					if (findAlpha) {
+						mulalphains = newline;
+						mulalphalnum = j;
+						mulist.addVar(p3[0]);
+					}
+					continue;
 				}
 
 				if (regex_search(newline, s, add)) {			//when macthing the add ins
@@ -598,56 +583,7 @@ void decompileJudgePattern(BlockList looplist)
 					if (addcount == 3) {	//maybe the mvm
 						//cout << "maybe theeeeeeeeeeeeeeeee mvm: " << addIns.size() << endl;
 						cout << "Find the MVM pattern." << endl;
-						/*VarList add_1, op1_1, op2_1, add_2, op1_2, op2_2, add_3, op1_3, op2_3;
-						string add_goal, add_op1, add_op2;
-						//cout << "mul op are:_" << add_goal << "_" << add_op1 << "|_" << add_op2 << "|_" << endl;
-						add_goal = findOperands(addIns[0])[0];
-						add_op1 = findOperands(addIns[0])[1];
-						add_op2 = findOperands(addIns[0])[2];
-						add_1.deBuilidVarList(bodycontent, add_goal);
-						add_1.showList();
-						op1_1.deBuilidVarList(bodycontent, add_op1);
-						op1_1.showList();
-						op2_1.deBuilidVarList(bodycontent, add_op2);
-						op2_1.showList();
-
-						add_goal = findOperands(addIns[1])[0];
-						add_op1 = findOperands(addIns[1])[1];
-						add_op2 = findOperands(addIns[1])[2];
-						//cout << "mul op are:_" << add_goal << "_" << add_op1 << "|_" << add_op2 << "|_" << endl;
-						add_2.deBuilidVarList(bodycontent, add_goal);
-						add_2.showList();
-						op1_2.deBuilidVarList(bodycontent, add_op1);
-						op1_2.showList();
-						op2_2.deBuilidVarList(bodycontent, add_op2);
-						op2_2.showList();
-
-						add_goal = findOperands(addIns[2])[0];
-						add_op1 = findOperands(addIns[2])[1];
-						add_op2 = findOperands(addIns[2])[2];
-						//cout << "mul op are:_" << add_goal << "_" << add_op1 << "|_" << add_op2 << "|_" << endl;
-						add_3.deBuilidVarList(bodycontent, add_goal);
-						add_3.showList();
-						op1_3.deBuilidVarList(bodycontent, add_op1);
-						op1_3.showList();
-						op2_3.deBuilidVarList(bodycontent, add_op2);
-						op2_3.showList();
-
-						 if the first is the mat
-						if (isEqual(op1_2, add_1) || isEqual(op2_2, add_1)) {
-							cout << "hahhahahahaha , find the mat" << endl;
-							if (op1_1.Size() == 1) {
-								cout << op1_1.gerVar(0) << endl;
-							}
-
-						}
-						else {				//  the first is vector
-							cout << "the second is mat" << endl;
-							if (op2_2.Size() == 1) {
-								cout << op2_2.gerVar(0) << endl;
-							}
-						}*/
-
+						// mulist.showList();
 						// %204 = add i64 % 59, % 203
 						// %208 = add i64 % 207, % 67
 						// %213 = add i64 %212, %208
@@ -657,47 +593,85 @@ void decompileJudgePattern(BlockList looplist)
 						/*1 for (int t = 0; t < looprange.size(); t++) {    // judge if the range is right
 							cout << looprange[t] << endl;
 						}*/
+						// cout << "adddddddddddddddddddddddddddddd ins: " << newline << ", " << findAlpha << endl;
 						string vec_addr, vec_col, res_addr, res_col;			// the addr and row of the vec and result
 						vector<string> mat;					// the parameters of the matrix
 
-						string add_1;
-						add_1 = findOperands(addIns[0])[0];
-						string op_2, or_2;
+						string add_1, op_2, or_2;
+						add_1 = findOperands(addIns[0])[0];		// the first add res
+						// the second add opts
 						op_2 = findOperands(addIns[1])[1];
 						or_2 = findOperands(addIns[1])[2];
+						string addr2 = findOperands(addIns[1])[0];
 						VarList var_2, add_temp;			// represent the second ins: %208
 						VarList op_1;
 						var_2.deBuilidVarList(bodycontent, op_2);
 						add_temp.deBuilidVarList(bodycontent, or_2);
-						if (var_2.findVar(add_1) || add_temp.findVar(add_1)) {			//if the first two add is the mat;
-							mat = findDeMat(addIns[0], addIns[1], loopvar, loopinitvar, looprange, bodycontent);
-							vec_addr = findOperands(addIns[2])[2];
-							vec_col = findDeRange(findOperands(addIns[2])[1], loopvar, loopinitvar, looprange);
+						/*for (string& s : addIns) {
+							cout << s << endl;
+							cout << "xxxxx" << endl;
+						}*/
+						bool find1 = var_2.findVar(add_1), find2 = add_temp.findVar(add_1);
+						if (find1 || find2) {			//if the first two add is the mat;
+							// add_temp.showList();
+							string add1op1 = findOperands(addIns[0])[1], add1op2 = findOperands(addIns[0])[2];
+							VarList a1o1, a1o2;
+							a1o1.deBuilidVarList(bodycontent, add1op1);
+							a1o2.deBuilidVarList(bodycontent, add1op2);
+							if (find1) {
+								mat = findDeMat(a1o1, a1o2, add_temp, var_2, loopvar, loopinitvar, looprange);
+							} else {
+								mat = findDeMat(a1o1, a1o2, var_2, add_temp, loopvar, loopinitvar, looprange);
+							}
+							// mat = findDeMat(addIns[0], addIns[1], loopvar, loopinitvar, looprange, bodycontent);
+							// cout << addIns[2] << endl;
+							/* be lazy
+							int a0 = stoi(a[0].substr(1)), a1 = stoi(a[1].substr(1)), a2 = stoi(a[2].substr(1));
+							// we should check weawher the var occur in loop.cond;
+							vec_addr = a0 - a1 < 5 ? a[2] : a[1];
+							vec_col = find
+							// vec_col = findDeRange(findOperands(addIns[2])[1], loopvar, loopinitvar, looprange);*/
+							vector<string> a = findOperands(addIns[2]);
+							VarList inop1,inop2;
+							inop1.deBuilidVarList(bodycontent, a[1]);
+							inop2.deBuilidVarList(bodycontent, a[2]);
+							vector<string> inr = findDeVec(inop1, inop2, loopvar, loopinitvar, looprange);
+							vec_addr = inr[0];
+							vec_col = inr[2]; 
 						}
-						else {
-							mat = findDeMat(addIns[1], addIns[2], loopvar, loopinitvar, looprange, bodycontent);
-							vec_addr = findOperands(addIns[0])[1];
-							op_1.deBuilidVarList(bodycontent, findOperands(addIns[0])[2]);
-							vec_col = findDeRange(op_1.getVar(op_1.Size() - 1), loopvar, loopinitvar, looprange);
-							//cout << "in the decompile mvm, the address and range of the vec is:_" << vec_addr << "_" << vec_col << "_" << endl;
-							//cout << "mat addr is:_" << mat[0] << "_" << mat[1] << "_" << mat[2] << "_" << endl;
-							//string vec_row = findDeRange(findOperands(addIns[0])[1], loopvar, loopinitvar, looprange);
-							//string vec_row = findDeRange(findOperands(addIns[0])[2], loopvar, loopinitvar, looprange);
+						else {	//if the last two 'add' is the mat;
+							// the input vector
+							vector<string> a = findOperands(addIns[0]);
+							VarList inop1,inop2;
+							inop1.deBuilidVarList(bodycontent, a[1]);
+							inop2.deBuilidVarList(bodycontent, a[2]);
+							vector<string> inr = findDeVec(inop1, inop2, loopvar, loopinitvar, looprange);
+							vec_addr = inr[0];
+							vec_col = inr[2];
+
+							// the mat
+							vector<string> add3 = findOperands(addIns[2]);
+							VarList add3op1, add3op2;
+							add3op1.deBuilidVarList(bodycontent, add3[1]);
+							add3op2.deBuilidVarList(bodycontent, add3[2]);
+							find1 = add3op1.findVar(addr2);
+							find2 = add3op2.findVar(addr2);
+							if (find1 || find2) {			//if the second two 'add' is the mat;
+								if (find1) {
+									mat = findDeMat(var_2, add_temp, add3op2, add3op1, loopvar, loopinitvar, looprange);
+								} else {
+									mat = findDeMat(var_2, add_temp, add3op1, add3op2, loopvar, loopinitvar, looprange);
+								}
+							}
 						}
+						// calculate the res;
 						VarList op_3, temp_3;
 						op_3.deBuilidVarList(bodycontent, findOperands(addIns[3])[1]);
 						temp_3.deBuilidVarList(bodycontent, findOperands(addIns[3])[2]);
-						if (op_3.Size() == 1) {
-							res_addr = op_3.getVar(0);
-							//cout << "res addr is: " << res_addr << endl;
-							res_col = findDeRange(temp_3.getVar(temp_3.Size() - 1), loopvar, loopinitvar, looprange);
-							//cout << "res_col is: " << res_col << endl;
-						}
-						else{
-							//cout << "res addr is: " << temp_3.getVar(0) << endl;
-							res_col = findDeRange(op_3.getVar(op_3.Size() - 1), loopvar, loopinitvar, looprange);
-						}
-
+						vector<string> rr = findDeVec(op_3, temp_3, loopvar, loopinitvar, looprange);
+						res_addr = rr[0];
+						res_col = rr[2];
+			
 						vector<string> initins;
 						initins.push_back("  %op1 = inttoptr i64 " + vec_addr +" to " + data_type + "*");
 						//cout << "the build initins is:_" << initins[0] << "_" << endl;
@@ -723,64 +697,80 @@ void decompileJudgePattern(BlockList looplist)
 						//p.setContent(mul1list, mul2list, resultList, num);
 
 					}
-
 					// if there are 4 add ins before the "add/fadd", it may be the mmm
 					else if (addcount == 4) {	//maybe the mmm	
 						// %166 = add i64 %165, %67
 						// %169 = add i64 %166, %168          : %67 is the address of the mat; %165 and %168 is the loop var(like i, j)
 						//cout << "maybe the mmmmmm" << endl;
 						cout << "Find the MMM pattern." << endl;
-						/*VarList dest_1, var_1, address_1;		// represent the first ins: %166
-						VarList dest_2, var_2, add_temp;			// represent the second ins: %169
-						string add_1, op_1, or_1;
-						string add_2, op_2, or_2;
 
-						for (int k = 0; k < 6; k += 2) {
-							// obtain the operators
-							add_1 = findOperands(addIns[k])[0];
-							op_1 = findOperands(addIns[k])[1];
-							or_1 = findOperands(addIns[k])[2];			//or_1 is the mat address
-
-							string row = findDeRange(var_1.getVar(0), loopvar, loopinitvar, looprange);			// the value of the row
-
-							var_1.deBuilidVarList(bodycontent, op_1);		
-
-							add_2 = findOperands(addIns[k + 1])[0];
-							op_2 = findOperands(addIns[k + 1])[1];
-							or_2 = findOperands(addIns[k + 1])[2];
-							var_2.deBuilidVarList(bodycontent, op_2);
-							add_temp.deBuilidVarList(bodycontent, or_2);
-
-							// judge which is the middle var
-							if (var_2.findVar(add_1)) {			//if is the first opr
-								string col = findDeRange(add_temp.getVar(0), loopvar, loopinitvar, looprange);
-							}
-							else if (add_temp.findVar(add_1)) {			// if is the seconde opr
-								string col = findDeRange(var_2.getVar(0), loopvar, loopinitvar, looprange);
-							}
-						}*/
 						Pattern p = Pattern("mmm");
 						int num = patternlist.size();
 						string add_ins = DealDeLoopRange(looprange, num);				//deal the looprange
-
 						VarList op_1, op_2, op_3;
-						vector<string> initins;
-						vector<string> matres = findDeMat(addIns[0], addIns[1], loopvar, loopinitvar, looprange, bodycontent);
-						//cout << "mat 1 : " << matres[0] << "_ "<< matres[1] << "_ " << matres[2] << endl;
-						initins.push_back("  %op1 = inttoptr i64 " + matres[0] + " to " + data_type + "*");
-						op_1.setInitIns(initins);
+						vector<string> initins, matres, matres1, matres2;
+						VarList add1op1, add1op2, add2op1, add2op2;
+						vector<string> addr1 = findOperands(addIns[0]), addr2 = findOperands(addIns[1]);
+						bool f1 = false, f2 = false;
 						
+						// first input mat
+						add2op1.deBuilidVarList(bodycontent, addr2[1]);
+						add2op2.deBuilidVarList(bodycontent, addr2[2]);
+						f1 = add2op1.findVar(addr1[0]);
+						f2 = add2op2.findVar(addr1[0]);
+						if (f1 ||  f2) {
+							add1op1.deBuilidVarList(bodycontent, addr1[1]);
+							add1op2.deBuilidVarList(bodycontent, addr1[2]);
+							if (f1) {	// second 'add', first op is the add res of first 'add'
+								matres = findDeMat(add1op1, add1op2, add2op1, add2op2, loopvar, loopinitvar, looprange);
+							} else if (f2) {
+								matres = findDeMat(add1op1, add1op2, add2op2, add2op1, loopvar, loopinitvar, looprange);
+							}
+							//cout << "mat 1 : " << matres[0] << "_ "<< matres[1] << "_ " << matres[2] << endl;
+							initins.push_back("  %op1 = inttoptr i64 " + matres[0] + " to " + data_type + "*");
+							op_1.setInitIns(initins);
+						}
 
+						// second input mat
+						addr1 = findOperands(addIns[2]);
+						addr2 = findOperands(addIns[3]);
+						add2op1.deBuilidVarList(bodycontent, addr2[1]);
+						add2op2.deBuilidVarList(bodycontent, addr2[2]);
+						f1 = add2op1.findVar(addr1[0]);
+						f2 = add2op2.findVar(addr1[0]);
+						if (f1 ||  f2) {
+							add1op1.deBuilidVarList(bodycontent, addr1[1]);
+							add1op2.deBuilidVarList(bodycontent, addr1[2]);
+							if (f1) {	// second 'add', first op is the add res of first 'add'
+								matres1 = findDeMat(add1op1, add1op2, add2op1, add2op2, loopvar, loopinitvar, looprange);
+							} else if (f2) {
+								matres1 = findDeMat(add1op1, add1op2, add2op2, add2op1, loopvar, loopinitvar, looprange);
+							}
+							//cout << "mat 2 : " << matres1[0] << "_ " << matres1[1] << "_ " << matres1[2] << endl;
+							initins[0] = "  %op2 = inttoptr i64 " + matres1[0] + " to " + data_type + "*";
+							op_2.setInitIns(initins);
+						}
 
-						vector<string> matres1 = findDeMat(addIns[2], addIns[3], loopvar, loopinitvar, looprange, bodycontent);
-						//cout << "mat 2 : " << matres1[0] << "_ " << matres1[1] << "_ " << matres1[2] << endl;
-						initins[0] = "  %op2 = inttoptr i64 " + matres1[0] + " to " + data_type + "*";
-						op_2.setInitIns(initins);
+						// res mat
+						addr1 = findOperands(addIns[4]);
+						addr2 = findOperands(addIns[5]);
+						add2op1.deBuilidVarList(bodycontent, addr2[1]);
+						add2op2.deBuilidVarList(bodycontent, addr2[2]);
+						f1 = add2op1.findVar(addr1[0]);
+						f2 = add2op2.findVar(addr1[0]);
+						if (f1 ||  f2) {
+							add1op1.deBuilidVarList(bodycontent, addr1[1]);
+							add1op2.deBuilidVarList(bodycontent, addr1[2]);
+							if (f1) {	// second 'add', first op is the add res of first 'add'
+								matres2 = findDeMat(add1op1, add1op2, add2op1, add2op2, loopvar, loopinitvar, looprange);
+							} else if (f2) {
+								matres2 = findDeMat(add1op1, add1op2, add2op2, add2op1, loopvar, loopinitvar, looprange);
+							}
+							//cout << "mat 3 : " << matres2[0] << "_ " << matres2[1] << "_ " << matres2[2] << endl;
+							initins[0] = "  %op3 = inttoptr i64 " + matres2[0] + " to " + data_type + "*";
+							op_3.setInitIns(initins);
+						}
 						
-						vector<string> matres2 = findDeMat(addIns[4], addIns[5], loopvar, loopinitvar, looprange, bodycontent);
-						//cout << "mat 3 : " << matres2[0] << "_ " << matres2[1] << "_ " << matres2[2] << endl;
-						initins[0] = "  %op3 = inttoptr i64 " + matres2[0] + " to " + data_type + "*";
-						op_3.setInitIns(initins);
 						//p.setRangeIns(loopvar, looprange, num);
 						//p.setContent(mul1list, mul2list, resultList, num);
 						p.deSetContent(op_1, op_2, op_3, num);
@@ -805,54 +795,154 @@ void decompileJudgePattern(BlockList looplist)
 
 			break;
 		}
-
-
-			/*goal = findOperands(line)[0];
-			op1 = findOperands(line)[1];
-			op2 = findOperands(line)[2];
-			//cout << "mul op are:_" << goal << "_" << op1 << "|_" << op2 << "|_" << endl;
-			VarList mulist, mul1list, mul2list;
-			mulist.buildList(looplist, goal);
-			//cout << "-----------the init instruction of the two op of mul:_" << mul1list.getinitIns() << endl; 
-			//cout << "_and_" << mul2list.getinitIns() << "_" << endl;
-
-			for (int j = i; j < bodycontent.size(); j++) {
-				line = bodycontent[j];
-				if (regex_search(line, s, add)) {
-					cout << "matching add" << endl;
-					string addop1 = findOperands(line)[1];
-					string addop2 = findOperands(line)[2];
-					cout << "add op are:_" << addop1 << "_" << addop2 << "_" << endl;
-					if (mulist.findVar(addop1) || mulist.findVar(addop2)) {
-						mul1list.buildList(looplist, op1);
-						mul2list.buildList(looplist, op2);
-						VarList resultList;
-						resultList.buildList(looplist, addop1);
-						if (varcount == 2) {
-							cout << " find mvm" << endl;
-							//cout << "-----------the init instruction of the goal:_" << resultList.getInitIns()[0] << endl;
-							//cout << "-----------the init instruction of the two op of mul:_" << mul1list.getinitIns() << endl;
-							Pattern p = Pattern("mvm");
-							//PatternList patternlist;
-							//cout << "looprange:_" << loopvar[0] << "_" << looprange[0] << endl;
-							//cout << "looprange:_" << loopvar[1] << "_" <<looprange[1] << endl;
-							int num = patternlist.size();
-							p.setRangeIns(loopvar, looprange, num);
-							p.setContent(mul1list, mul2list, resultList, num);
-							p.setbrlabels(looplist);
-							patternlist.add(p);
-							//cout << "_and_" << mul2list.getinitIns() << "_" << endl;
-						}
-						else if (varcount == 3) {
-							cout << "find mmm" << endl;
-						}
-					}
-
-				}
-			}*/
-		//}
 	}
 
+}
+
+vector<string> findAlphaAndBeta(string& loadalpha, VarList& resVarList, BlockList& looplist) {
+	vector<string> res = {"float", "1.0", "", "float", "0.0", "-1"};		// default value: alpha type, alpha value, beta type, beta value.
+	int len = looplist.getListSize();
+	vector<string> innermostbody = looplist.findById(len - 1).getContent();
+	Block penultimateBlock = looplist.findById(len - 3);
+	vector<string> penultimatebody = penultimateBlock.getContent();
+	// find beta first
+	regex mul(" = [f]*mul ");
+	regex load(loadalpha + " = load");
+	smatch s;
+	string betagoal = "";
+	regex store("store (float|i32|i64|i8|double) %");
+	int i = 0;
+	bool findbeta = false;
+	for (string& ins : penultimatebody) {	
+		i++;
+		if (regex_search(ins, s, mul)) {		// 如果存在mul语句
+			cout << "in findbeta: " << ins << endl;
+			vector<string> opset = findOperands(ins);
+			string op1 = opset[1], op2 = opset[2];
+			betagoal = opset[0];
+			string ty = datatype(ins);
+			// resVarList.showList();
+			BlockList penultimatelist;
+			penultimatelist.insert(penultimateBlock);
+			VarList op1list, op2list;
+			op1list.buildList(penultimatelist, op1);
+			op2list.buildList(penultimatelist, op2);
+			if (resVarList == op1list) {
+				res[4] = op2;
+				res[3] = ty;
+				resVarList.mergeList(op1list);
+				findbeta = true;
+				// cout << "lalallalal: " << op2 << endl; 
+				// break;
+			} else if (resVarList == op2list) {
+				res[4] = op1;
+				res[3] = ty;
+				findbeta = true;
+				resVarList.mergeList(op2list);
+				// cout << "lalallalal: " << op2 << endl; 
+				// break;
+			} else {
+				// cout << "aaaaaa\n";
+			}
+		} else if (regex_search(ins, s, store) && findbeta == true) {		// the store ins
+			int p = ins.find("*") + 2;
+			int x = ins.find(",", p);
+			string aim = ins.substr(p, x - p);
+			// cout << "22222222222222222222222222222222 try to find: " << aim << endl;
+			if (resVarList.findVar(aim)) {
+				res[5] = to_string(penultimateBlock.getLastLine() - (penultimatebody.size() - i));
+				// cout << "333333333333333333333333333333 try to find: " << res[5] << endl;
+				break;
+			}
+		}
+	}
+
+	// find alpha second
+	for (string& ins :innermostbody) {	
+		if (regex_search(ins, s, load)) {		// 如果存在load语句
+			// cout << "--load ins: " << ins << endl;
+			string ty = datatype(ins);
+			res[1] = ty;
+			int e = ins.find("=");
+			res[2] = ins.substr(e - 1) + "\n";			// -> " = load ......."
+			// cout << "-" << res[2] << "-" << endl;
+		}
+	}
+
+	return res;
+}
+
+vector<string> defindAlphaAndBeta(string& loadalpha, VarList& resVarList, BlockList& looplist) {
+	vector<string> res = {"float", "1.0", "", "float", "0.0", "-1"};		// default value: alpha type, alpha value, beta type, beta value.
+	int len = looplist.getListSize();
+	vector<string> innermostbody = looplist.findById(len - 1).getContent();
+	Block penultimateBlock = looplist.findById(len - 3);
+	vector<string> penultimatebody = penultimateBlock.getContent();
+	// find beta first
+	regex mul(" = [f]*mul ");
+	regex load(loadalpha + " = load");
+	smatch s;
+	string betagoal = "";
+	regex store("store (float|i32|i64|i8|double) %");
+	int i = 0;
+	bool findbeta = false;
+	for (string& ins : penultimatebody) {	
+		i++;
+		if (regex_search(ins, s, mul)) {		// 如果存在mul语句
+			cout << "in findbeta: " << ins << endl;
+			vector<string> opset = findOperands(ins);
+			string op1 = opset[1], op2 = opset[2];
+			betagoal = opset[0];
+			string ty = datatype(ins);
+			// resVarList.showList();
+			BlockList penultimatelist;
+			penultimatelist.insert(penultimateBlock);
+			VarList op1list, op2list;
+			op1list.buildList(penultimatelist, op1);
+			op2list.buildList(penultimatelist, op2);
+			if (resVarList == op1list) {
+				res[4] = op2;
+				res[3] = ty;
+				resVarList.mergeList(op1list);
+				findbeta = true;
+				// cout << "lalallalal: " << op2 << endl; 
+				// break;
+			} else if (resVarList == op2list) {
+				res[4] = op1;
+				res[3] = ty;
+				findbeta = true;
+				resVarList.mergeList(op2list);
+				// cout << "lalallalal: " << op2 << endl; 
+				// break;
+			} else {
+				// cout << "aaaaaa\n";
+			}
+		} else if (regex_search(ins, s, store) && findbeta == true) {		// the store ins
+			int p = ins.find("*") + 2;
+			int x = ins.find(",", p);
+			string aim = ins.substr(p, x - p);
+			// cout << "22222222222222222222222222222222 try to find: " << aim << endl;
+			if (resVarList.findVar(aim)) {
+				res[5] = to_string(penultimateBlock.getLastLine() - (penultimatebody.size() - i));
+				// cout << "333333333333333333333333333333 try to find: " << res[5] << endl;
+				break;
+			}
+		}
+	}
+
+	// find alpha second
+	for (string& ins :innermostbody) {	
+		if (regex_search(ins, s, load)) {		// 如果存在load语句
+			// cout << "--load ins: " << ins << endl;
+			string ty = datatype(ins);
+			res[1] = ty;
+			int e = ins.find("=");
+			res[2] = ins.substr(e - 1) + "\n";			// -> " = load ......."
+			// cout << "-" << res[2] << "-" << endl;
+		}
+	}
+
+	return res;
 }
 
 vector<string> findOperands(string line)		//find the operands of the operation(or, fadd, fmul)
@@ -1326,6 +1416,8 @@ vector<string> oldfindLoopVarAndRange(Block block)
 }
 
 
+
+
 string findDeRange(string var, vector<string> loopvar, vector<string> loopinitvar, vector<string> looprange)
 {
 	//cout << "var findRANGE is:_" << var << "_" << endl;
@@ -1346,12 +1438,134 @@ string findDeRange(string var, vector<string> loopvar, vector<string> loopinitva
 	return res;
 }
 
+// two ops of first add ins and one op of second add ins;
+vector<string> findDeMat(VarList& add1op1, VarList& add1op2, VarList& add2op1, VarList& add2op2, vector<string>& loopvar, vector<string>& loopinitvar, vector<string>& looprange) {
+	// return the {address, row, col} of matrix
+	// if add2op is the address
+	/*cout << "////////////////in finddemat\n";
+	for (string& s : loopinitvar) {
+		cout << "_" << s << endl;
+	}
+	add1op1.showList();
+	add1op2.showList();
+	add2op1.showList();
+	add2op2.showList();*/
+	string mataddr = "", matrow = "", matcol = "";
+	// string t1, t2, t3, t4;
+	bool f1 = true, f2 = true, f3 = true, f4 = true;
+	int p1 = -1, p2 = -1, p3 = -1, p4 = -1;
+	// find the correspond loop var
+	for (int j = 0; j < loopvar.size(); j++) {
+		if (f1) {
+			for (int i = 0; i < add1op1.Size(); i++) {
+				if (loopvar[j] == add1op1.getVar(i) || loopinitvar[j] == add1op1.getVar(i)) {
+					// t1 = loopinitvar[j];
+					f1 = false;
+					p1 = j;
+					break;
+				}
+			}
+		}
+		if (f2) {
+			for (int i = 0; i < add1op2.Size(); i++) {
+				if (loopvar[j] == add1op1.getVar(i) || loopinitvar[j] == add1op1.getVar(i)) {
+					// t2 = loopinitvar[j];
+					f2 = false;
+					p2 = j;
+					break;
+				}
+			}
+		}
+		if (f3) {
+			for (int i = 0; i < add2op1.Size(); i++) {
+				if (loopvar[j] == add2op1.getVar(i) || loopinitvar[j] == add2op1.getVar(i)) {
+					// t3 = loopinitvar[j];
+					f3 = false;
+					p3 = j;
+					break;
+				}
+			}
+		}
+		if (f4) {
+			for (int i = 0; i < add2op2.Size(); i++) {
+				if (loopvar[j] == add2op2.getVar(i) || loopinitvar[j] == add2op2.getVar(i)) {
+					// t4 = loopinitvar[j];
+					f4 = false;
+					p4 = j;
+					break;
+				}
+			}
+		}
+	}
+	// cout << "-_-_-_-_-_-_" << t1 << "-" << t2  << "-" << t3 << endl;
+	if (f3) {			// address in second 'add' ins
+		mataddr = add2op1.getVar(0);
+		matrow = looprange[p4];
+		matcol = p4 == p1 ? looprange[p2] : looprange[p1];
+	} else if (f1) { // address in 1st 'add' ins, and the 1st op
+		mataddr = add1op1.getVar(0);
+		matrow = looprange[p2];
+		matcol = p2 == p3 ? looprange[p4] : looprange[p3];
+	} else if (f2) { // address in 1st 'add' ins, and the 1st op
+		mataddr = add1op2.getVar(0);
+		matrow = looprange[p1];
+		matcol = p1 == p3 ? looprange[p4] : looprange[p3];
+	}
+	// cout << "------------ find de mat: " << mataddr << "----" << matrow << "----" << matcol << endl;
+	return {mataddr, matrow, matcol};
+}
+
+vector<string> findDeVec(VarList& addop1, VarList& addop2, vector<string>& loopvar, vector<string>& loopinitvar, vector<string>& looprange) {
+	bool f1 = true, f2 = true;
+	int p1 = -1, p2 = -1;
+	string mataddr = "", matrow = "1", matcol = "";
+	// find the correspond loop var
+	for (int j = 0; j < loopvar.size(); j++) {
+		if (f1) {
+			for (int i = 0; i < addop1.Size(); i++) {
+				if (loopvar[j] == addop1.getVar(i) || loopinitvar[j] == addop1.getVar(i)) {
+					// t1 = loopinitvar[j];
+					f1 = false;
+					p1 = j;
+					break;
+				}
+			}
+		}
+		if (f2) {
+			for (int i = 0; i < addop2.Size(); i++) {
+				if (loopvar[j] == addop2.getVar(i) || loopinitvar[j] == addop2.getVar(i)) {
+					// t2 = loopinitvar[j];
+					f2 = false;
+					p2 = j;
+					break;
+				}
+			}
+		}
+	}
+	if (f1) { // address in 1st 'add' ins, and the 1st op
+		mataddr = addop1.getVar(0);
+		matcol = looprange[p2];
+	} else if (f2) { // address in 1st 'add' ins, and the 1st op
+		mataddr = addop2.getVar(0);
+		matcol = looprange[p1];
+	}
+
+	return {mataddr, matrow, matcol};
+}
+
 
 vector<string> findDeMat(string line1, string line2 , vector<string> loopvar, vector<string> loopinitvar, vector<string> looprange, vector<string> bodycontent)
 {
 	// goal: return the mat address, row and col size
 	string addr, row, col;
-
+	cout << "////////////////in finddemat\n";
+	for (string& s : loopvar) {
+		cout << "_" << s << endl;
+	}
+	cout << "////////////////in finddemat\n";
+	for (string& s : loopinitvar) {
+		cout << "_" << s << endl;
+	}
 	// the example of the line1 and line2
 	// %166 = add i64 %165, %67
 	// %169 = add i64 %166, %168          : %67 is the address of the mat; %165 and %168 is the loop var(like i, j)
@@ -1681,4 +1895,14 @@ bool isEqual(VarList list1, VarList list2)
 		}
 	}
 	return false;
+}
+
+vector<string> findMAC() {
+
+}
+
+vector<pair<string, string>> findVectorAndMatrix() {
+	// vector: loop var in add ins/getelementptr
+	// mat: two add, two loop var, relay;  / getelementptr
+	
 }
