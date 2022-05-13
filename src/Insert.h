@@ -10,10 +10,10 @@ using namespace std;
 void write_pattern(string input_filename, PatternList patternlist)
 {
 	cout << endl;
-	cout << "Inserting the pattern block......" << endl;
+	cout << "-------Inserting the pattern blocks....." << endl;
 	string filename;
 	filename = input_filename;
-	ifstream infile(filename+".ll");		// the original file
+	ifstream infile(filename);		// the original file
 	string line;    //the line read
 	int line_count = 0;  //line number
 
@@ -48,10 +48,16 @@ void write_pattern(string input_filename, PatternList patternlist)
 				flag = false;
 				//pList.erase(pList.begin() + i);
 			}
-			else if (line_count == pattern.getInsertLine()) {
+			if (line_count == pattern.getInsertLine()) {
 				fout << pattern.getcontent() << endl;
 				flag = false;
 				//pList.erase(pList.begin() + i);
+			}
+			// cout << "commeline: " << pattern.getCommentLine() << endl; 
+			if (line_count == pattern.getCommentLine() - 1) {
+				// cout << "                                                       !!!!!!!there is: " << line << endl;
+				fout << ";" + line << endl;
+				flag = false;
 			}
 			//else {
 				//fout << line << endl;

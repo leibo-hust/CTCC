@@ -5,11 +5,14 @@
 
 using namespace std;
 
-int main() {
-	
-	string filename = "mvm";
-	filename = "./IR/" + filename;
-	readFile(filename + ".ll");
+int main(int argc, char* argv[]) {
+	if (argc != 2) {
+		cout << "Input file error" << endl;
+		return 0;
+	}
+	string filename(argv[1]);
+	// string filename = "mvm";
+	readFile(filename);
 	write_pattern(filename, patternlist);
 
 	return 0;
